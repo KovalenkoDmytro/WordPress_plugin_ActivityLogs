@@ -84,7 +84,7 @@ Every night at `02:00` in the WordPress site timezone, the plugin:
 1. Requests plugin metadata from:
 
 ```text
-https://wp-plugins.dmytro-kovalenko.ca/wp-logs/wp-logs-viewer-plugin.json
+https://wp-plugins.dmytro-kovalenko.ca/WordPress_plugin_ActivityLogs/wp-logs-viewer-plugin.json
 ```
 
 2. Checks whether the remote version is newer than the installed version.

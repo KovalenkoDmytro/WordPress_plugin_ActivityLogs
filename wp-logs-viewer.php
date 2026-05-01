@@ -601,7 +601,7 @@ final class WPActivityLogger
     {
         return (string) apply_filters(
             'wp_activity_logger_update_metadata_url',
-            'https://wp-plugins.dmytro-kovalenko.ca/wp-logs/wp-logs-viewer-plugin.json'
+            'https://wp-plugins.dmytro-kovalenko.ca/WordPress_plugin_ActivityLogs/wp-logs-viewer-plugin.json'
         );
     }
 
