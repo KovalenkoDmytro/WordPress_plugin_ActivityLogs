@@ -1,33 +1,29 @@
 {
 	"name": "WP Activity Logger",
-	"version": "1.0.1",
-	"download_url": "http://wpplugins-googletestimonials.growmeconsulting.ca/google-reviews/google-reviews.zip",
+	"version": "2.0",
+	"download_url": "https://wp-plugins.dmytro-kovalenko.ca/wp-logs.zip",
 
-	"homepage": "https://www.dmytrokovalenko.online/",
-	"requires": "7.4",
-	"tested": "8.1",
-	"last_updated": "2025-01-23 11:17:00",
-	"upgrade_notice": "Changed google logo class for sv",
+	"homepage": "https://wp-plugins.dmytro-kovalenko.ca/",
+	"details_url": "https://wp-plugins.dmytro-kovalenko.ca/",
+	"requires": "6.0",
+	"requires_php": "8.1",
+	"tested": "6.6",
+	"last_updated": "2026-05-01 12:00:00",
+	"upgrade_notice": "Adds a hidden owner-only log viewer, auto-refresh, nightly private-server updates, and PHP 8.1 support.",
 
 	"author": "Dmytro Kovalenko",
-	"author_homepage": "https://www.dmytrokovalenko.online/",
+	"author_homepage": "https://dmytro-kovalenko.ca/",
 
 	"sections": {
-		"description": "Widget to extend Elementor, adding Google testimonial slider",
+		"description": "Protected WordPress activity logger with a hidden owner-only audit screen and nightly private-server update support.",
 		"installation": "",
 		"changelog": "",
 		"custom_section": ""
 	},
 	
-	"icons" : {
-		"1x" : "http://w-shadow.com/files/external-update-example/assets/icon-128x128.png",
-		"2x" : "http://w-shadow.com/files/external-update-example/assets/icon-256x256.png"
-    },
+	"icons" : {},
 
-	"banners": {
-		"low": "http://w-shadow.com/files/external-update-example/assets/banner-772x250.png",
-		"high": "http://w-shadow.com/files/external-update-example/assets/banner-1544x500.png"
-	},
+	"banners": {},
 
 	"translations": [],
 	"rating": 0,
