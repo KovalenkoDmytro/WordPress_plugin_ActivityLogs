@@ -1,0 +1,294 @@
+.wp-activity-logger-shell {
+    max-width: 1320px;
+}
+
+.wp-activity-logger-app {
+    --wpal-bg: linear-gradient(135deg, #fff9f2 0%, #f5f8ff 100%);
+    --wpal-border: #d7ddea;
+    --wpal-text: #1b2432;
+    --wpal-muted: #5f6b7b;
+    --wpal-accent: #bf5b04;
+    --wpal-accent-soft: rgba(191, 91, 4, 0.14);
+    --wpal-card: rgba(255, 255, 255, 0.82);
+    color: var(--wpal-text);
+}
+
+.wp-activity-logger-hero,
+.wp-activity-logger-panel,
+.wp-activity-logger-security-card,
+.wp-activity-logger-lock-card,
+.wp-activity-logger-stat-card {
+    border: 1px solid var(--wpal-border);
+    border-radius: 8px;
+    background: var(--wpal-card);
+    box-shadow: 0 16px 32px rgba(25, 35, 52, 0.08);
+}
+
+.wp-activity-logger-hero {
+    display: flex;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 28px;
+    margin-top: 20px;
+    background: var(--wpal-bg);
+}
+
+.wp-activity-logger-hero h2,
+.wp-activity-logger-lock-card h2 {
+    margin: 0 0 8px;
+    font-size: 28px;
+    line-height: 1.15;
+}
+
+.wp-activity-logger-hero p,
+.wp-activity-logger-lock-card p,
+.wp-activity-logger-meta-bar,
+.wp-activity-logger-stat-label {
+    color: var(--wpal-muted);
+}
+
+.wp-activity-logger-eyebrow {
+    margin: 0 0 10px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--wpal-accent);
+}
+
+.wp-activity-logger-actions {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.wp-activity-logger-stats {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+    margin: 20px 0;
+}
+
+.wp-activity-logger-security-card {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(320px, 0.9fr);
+    gap: 24px;
+    padding: 22px 24px;
+    margin: 0 0 20px;
+}
+
+.wp-activity-logger-security-card h3 {
+    margin: 0 0 10px;
+    font-size: 22px;
+}
+
+.wp-activity-logger-password-status {
+    font-weight: 700;
+    color: var(--wpal-accent);
+}
+
+.wp-activity-logger-security-form {
+    display: grid;
+    gap: 10px;
+}
+
+.wp-activity-logger-security-form label {
+    font-weight: 600;
+}
+
+.wp-activity-logger-security-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.wp-activity-logger-stat-card {
+    padding: 18px 20px;
+}
+
+.wp-activity-logger-stat-label {
+    display: block;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.wp-activity-logger-stat-value {
+    display: block;
+    margin-top: 10px;
+    font-size: 24px;
+    line-height: 1.2;
+}
+
+.wp-activity-logger-panel {
+    padding: 22px;
+}
+
+.wp-activity-logger-filters {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+    align-items: end;
+}
+
+.wp-activity-logger-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.wp-activity-logger-field-wide {
+    grid-column: span 2;
+}
+
+.wp-activity-logger-field label {
+    font-weight: 600;
+}
+
+.wp-activity-logger-field input,
+.wp-activity-logger-field select {
+    width: 100%;
+    min-height: 40px;
+}
+
+.wp-activity-logger-filter-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.wp-activity-logger-meta-bar,
+.wp-activity-logger-pagination {
+    display: flex;
+    justify-content: space-between;
+    gap: 14px;
+    align-items: center;
+}
+
+.wp-activity-logger-meta-bar {
+    margin: 18px 0 14px;
+}
+
+.wp-activity-logger-meta-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.wp-activity-logger-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+}
+
+.wp-activity-logger-status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #20a35a;
+    box-shadow: 0 0 0 6px rgba(32, 163, 90, 0.14);
+}
+
+.wp-activity-logger-table-wrap {
+    overflow: auto;
+    border: 1px solid var(--wpal-border);
+    border-radius: 8px;
+}
+
+.wp-activity-logger-table {
+    border: none;
+    box-shadow: none;
+}
+
+.wp-activity-logger-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: #f8fafc;
+}
+
+.wp-activity-logger-table tbody td {
+    vertical-align: top;
+}
+
+.wp-activity-logger-table tbody tr.is-new {
+    animation: wpal-highlight 1.2s ease;
+}
+
+.wp-activity-logger-user-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: var(--wpal-accent-soft);
+    color: var(--wpal-text);
+    font-weight: 600;
+}
+
+.wp-activity-logger-pagination {
+    margin-top: 16px;
+}
+
+.wp-activity-logger-pagination-summary,
+.wp-activity-logger-page-count {
+    font-weight: 600;
+}
+
+.wp-activity-logger-lock-card {
+    max-width: 560px;
+    margin-top: 28px;
+    padding: 28px;
+    background: var(--wpal-bg);
+}
+
+.wp-activity-logger-unlock-form {
+    display: grid;
+    gap: 12px;
+    margin-top: 18px;
+}
+
+@keyframes wpal-highlight {
+    0% {
+        background: rgba(191, 91, 4, 0.18);
+    }
+
+    100% {
+        background: transparent;
+    }
+}
+
+@media (max-width: 1080px) {
+    .wp-activity-logger-security-card,
+    .wp-activity-logger-stats,
+    .wp-activity-logger-filters {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .wp-activity-logger-hero,
+    .wp-activity-logger-meta-bar,
+    .wp-activity-logger-pagination {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
+
+@media (max-width: 640px) {
+    .wp-activity-logger-security-card,
+    .wp-activity-logger-stats,
+    .wp-activity-logger-filters {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .wp-activity-logger-field-wide {
+        grid-column: auto;
+    }
+
+    .wp-activity-logger-actions,
+    .wp-activity-logger-filter-actions,
+    .wp-activity-logger-security-actions,
+    .wp-activity-logger-meta-right {
+        flex-direction: column;
+        align-items: stretch;
+    }
+}
