@@ -109,7 +109,7 @@ The private update server should host a JSON file like this:
 ```json
 {
   "name": "WP Activity Logger",
-  "version": "1.2.0",
+  "version": "2.1",
   "download_url": "https://wp-plugins.dmytro-kovalenko.ca/wp-logs.zip",
   "homepage": "https://wp-plugins.dmytro-kovalenko.ca/",
   "details_url": "https://wp-plugins.dmytro-kovalenko.ca/",

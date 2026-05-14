@@ -3,7 +3,7 @@
  * Plugin Name: WP Activity Logger
  * Plugin URI: https://github.com/KovalenkoDmytro/wp_logs_plugin
  * Description: Records key site activity and provides a protected activity log screen for site owners.
- * Version: 2.0
+ * Version: 2.1
  * Author: Dmytro Kovalenko
  * Author URI: https://dmytro-kovalenko.ca
  * License: GPL2
@@ -37,7 +37,7 @@ require_once __DIR__ . '/plugin-update-checker-master/plugin-update-checker.php'
 
 final class WPActivityLogger
 {
-    public const VERSION = '2.0';
+    public const VERSION = '2.1';
     public const VIEW_CAPABILITY = 'manage_options';
     public const NIGHTLY_UPDATE_HOOK = 'wp_activity_logger_nightly_update';
     public const LOG_RETENTION_DAYS = 30;
