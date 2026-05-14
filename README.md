@@ -109,19 +109,19 @@ The private update server should host a JSON file like this:
 ```json
 {
   "name": "WP Activity Logger",
-  "version": "2.1",
+  "version": "2.2",
   "download_url": "https://wp-plugins.dmytro-kovalenko.ca/wp-logs.zip",
   "homepage": "https://wp-plugins.dmytro-kovalenko.ca/",
   "details_url": "https://wp-plugins.dmytro-kovalenko.ca/",
   "requires": "6.0",
   "requires_php": "8.1",
   "tested": "6.6",
-  "last_updated": "2026-05-14 12:00:00",
-  "upgrade_notice": "Adds hidden owner-only logs, nightly private-server updates, and 30-day log cleanup.",
+  "last_updated": "2026-05-14 13:15:00",
+  "upgrade_notice": "Adds Edmonton timestamps, nightly private-server updates, and 30-day log cleanup.",
   "author": "Dmytro Kovalenko",
   "author_homepage": "https://dmytro-kovalenko.com/",
   "sections": {
-    "description": "Protected WordPress activity logger with a hidden owner-only audit screen, nightly private-server updates, and automatic cleanup of logs older than 30 days.",
+    "description": "Protected WordPress activity logger with a hidden owner-only audit screen, Edmonton-based timestamps, nightly private-server updates, and automatic cleanup of logs older than 30 days.",
     "installation": "",
     "changelog": "",
     "custom_section": ""
@@ -149,6 +149,13 @@ The plugin currently logs:
 - plugin activation
 - plugin deactivation
 - plugin deletion
+
+## Time Zone
+
+- Log entries are stored in UTC for consistency.
+- The log viewer displays timestamps in `America/Edmonton`.
+- Date filters are interpreted in `America/Edmonton`, so filtering matches what you see on screen.
+- The nightly maintenance and update check runs at `02:00` in `America/Edmonton`.
 
 ## Development Notes
 

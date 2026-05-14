@@ -155,14 +155,20 @@ function wp_activity_logger_build_where_clause(array $filters): array
 
     $start_date = (string) ($filters['start_date'] ?? '');
     if ($start_date !== '') {
-        $clauses[] = 'DATE(logs.created_at) >= %s';
-        $params[] = $start_date;
+        $start_boundary = wp_activity_logger_get_utc_date_boundary($start_date, false);
+        if ($start_boundary !== null) {
+            $clauses[] = 'logs.created_at >= %s';
+            $params[] = $start_boundary;
+        }
     }
 
     $end_date = (string) ($filters['end_date'] ?? '');
     if ($end_date !== '') {
-        $clauses[] = 'DATE(logs.created_at) <= %s';
-        $params[] = $end_date;
+        $end_boundary = wp_activity_logger_get_utc_date_boundary($end_date, true);
+        if ($end_boundary !== null) {
+            $clauses[] = 'logs.created_at <= %s';
+            $params[] = $end_boundary;
+        }
     }
 
     $username = (string) ($filters['username'] ?? '');
@@ -193,7 +199,15 @@ function wp_activity_logger_format_timestamp(string $timestamp): string
 {
     $format = trim(get_option('date_format') . ' ' . get_option('time_format'));
 
-    return get_date_from_gmt($timestamp, $format);
+    try {
+        $date_time = new DateTimeImmutable($timestamp, new DateTimeZone('UTC'));
+    } catch (Exception) {
+        return $timestamp;
+    }
+
+    return $date_time
+        ->setTimezone(wp_activity_logger_timezone())
+        ->format($format . ' T');
 }
 
 function wp_activity_logger_prepare_sql(string $sql, array $params): string
@@ -220,4 +234,28 @@ function wp_activity_logger_delete_expired_logs(int $retention_days): void
             $cutoff
         )
     );
+}
+
+function wp_activity_logger_timezone(): DateTimeZone
+{
+    return new DateTimeZone('America/Edmonton');
+}
+
+function wp_activity_logger_get_utc_date_boundary(string $date, bool $end_of_day): ?string
+{
+    if ($date === '') {
+        return null;
+    }
+
+    $time = $end_of_day ? '23:59:59' : '00:00:00';
+
+    try {
+        $date_time = new DateTimeImmutable($date . ' ' . $time, wp_activity_logger_timezone());
+    } catch (Exception) {
+        return null;
+    }
+
+    return $date_time
+        ->setTimezone(new DateTimeZone('UTC'))
+        ->format('Y-m-d H:i:s');
 }

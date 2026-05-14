@@ -187,7 +187,7 @@ function wp_activity_logger_render_dashboard(string $page_url, array $filters, a
     echo '<th>' . esc_html__('User', 'wp-activity-logger') . '</th>';
     echo '<th>' . esc_html__('Activity', 'wp-activity-logger') . '</th>';
     echo '<th>' . esc_html__('IP address', 'wp-activity-logger') . '</th>';
-    echo '<th>' . esc_html__('Timestamp', 'wp-activity-logger') . '</th>';
+    echo '<th>' . esc_html__('Timestamp (Edmonton)', 'wp-activity-logger') . '</th>';
     echo '</tr></thead>';
     echo '<tbody data-log-rows>';
 
