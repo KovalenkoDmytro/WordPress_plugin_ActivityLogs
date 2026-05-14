@@ -3,7 +3,7 @@
  * Plugin Name: WP Activity Logger
  * Plugin URI: https://github.com/KovalenkoDmytro/wp_logs_plugin
  * Description: Records key site activity and provides a protected activity log screen for site owners.
- * Version: 2.2
+ * Version: 2.3
  * Author: Dmytro Kovalenko
  * Author URI: https://dmytro-kovalenko.ca
  * License: GPL2
@@ -37,7 +37,7 @@ require_once __DIR__ . '/plugin-update-checker-master/plugin-update-checker.php'
 
 final class WPActivityLogger
 {
-    public const VERSION = '2.2';
+    public const VERSION = '2.3';
     public const VIEW_CAPABILITY = 'manage_options';
     public const NIGHTLY_UPDATE_HOOK = 'wp_activity_logger_nightly_update';
     public const LOG_RETENTION_DAYS = 30;
@@ -70,6 +70,7 @@ final class WPActivityLogger
         add_action(self::NIGHTLY_UPDATE_HOOK, [$this, 'run_nightly_update']);
 
         add_filter('all_plugins', [$this, 'hide_plugin_from_non_owner']);
+        add_filter('plugin_row_meta', [$this, 'add_plugin_row_meta_link'], 10, 4);
 
         $this->register_logging_hooks();
     }
@@ -288,6 +289,23 @@ final class WPActivityLogger
         }
 
         return $plugins;
+    }
+
+    public function add_plugin_row_meta_link(array $plugin_meta, string $plugin_file, array $plugin_data, string $status): array
+    {
+        unset($plugin_data, $status);
+
+        if (! $this->is_owner_viewer() || $plugin_file !== plugin_basename(__FILE__)) {
+            return $plugin_meta;
+        }
+
+        $plugin_meta[] = sprintf(
+            '<a href="%s">%s</a>',
+            esc_url($this->get_admin_page_url()),
+            esc_html__('Logs', 'wp-activity-logger')
+        );
+
+        return $plugin_meta;
     }
 
     public function can_view_logs(): bool

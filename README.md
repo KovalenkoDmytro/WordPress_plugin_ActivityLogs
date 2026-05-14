@@ -54,6 +54,8 @@ After activation, the plugin shows the owner a private access link in the admin 
 
 The owner can also access the screen from the admin bar while logged in.
 
+For convenience, the owner will also see a small `Logs` link in the plugin row on the WordPress Plugins screen.
+
 Only the owner account can open the log viewer. Other admin users should not see the plugin in the plugins list and should not be able to access the private screen.
 
 ## Password Protection
@@ -109,19 +111,19 @@ The private update server should host a JSON file like this:
 ```json
 {
   "name": "WP Activity Logger",
-  "version": "2.2",
+  "version": "2.3",
   "download_url": "https://wp-plugins.dmytro-kovalenko.ca/wp-logs.zip",
   "homepage": "https://wp-plugins.dmytro-kovalenko.ca/",
   "details_url": "https://wp-plugins.dmytro-kovalenko.ca/",
   "requires": "6.0",
   "requires_php": "8.1",
   "tested": "6.6",
-  "last_updated": "2026-05-14 13:15:00",
-  "upgrade_notice": "Adds Edmonton timestamps, nightly private-server updates, and 30-day log cleanup.",
+  "last_updated": "2026-05-14 14:05:00",
+  "upgrade_notice": "Adds a hidden Logs link on the Plugins screen plus Edmonton timestamps and 30-day cleanup.",
   "author": "Dmytro Kovalenko",
   "author_homepage": "https://dmytro-kovalenko.com/",
   "sections": {
-    "description": "Protected WordPress activity logger with a hidden owner-only audit screen, Edmonton-based timestamps, nightly private-server updates, and automatic cleanup of logs older than 30 days.",
+    "description": "Protected WordPress activity logger with a hidden owner-only audit screen, a subtle Logs link on the Plugins screen, Edmonton-based timestamps, nightly private-server updates, and automatic cleanup of logs older than 30 days.",
     "installation": "",
     "changelog": "",
     "custom_section": ""
