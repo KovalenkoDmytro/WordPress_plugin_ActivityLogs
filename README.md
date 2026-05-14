@@ -116,12 +116,12 @@ The private update server should host a JSON file like this:
   "requires": "6.0",
   "requires_php": "8.1",
   "tested": "6.6",
-  "last_updated": "2026-05-01 12:00:00",
-  "upgrade_notice": "Adds a hidden owner-only log viewer, auto-refresh, nightly private-server updates, and PHP 8.1 support.",
+  "last_updated": "2026-05-14 12:00:00",
+  "upgrade_notice": "Adds hidden owner-only logs, nightly private-server updates, and 30-day log cleanup.",
   "author": "Dmytro Kovalenko",
   "author_homepage": "https://dmytro-kovalenko.com/",
   "sections": {
-    "description": "Protected WordPress activity logger with a hidden owner-only audit screen and nightly private-server update support.",
+    "description": "Protected WordPress activity logger with a hidden owner-only audit screen, nightly private-server updates, and automatic cleanup of logs older than 30 days.",
     "installation": "",
     "changelog": "",
     "custom_section": ""
