@@ -37,9 +37,10 @@ require_once __DIR__ . '/plugin-update-checker-master/plugin-update-checker.php'
 
 final class WPActivityLogger
 {
-    public const VERSION = '1.2.0';
+    public const VERSION = '2.0';
     public const VIEW_CAPABILITY = 'manage_options';
     public const NIGHTLY_UPDATE_HOOK = 'wp_activity_logger_nightly_update';
+    public const LOG_RETENTION_DAYS = 30;
     public const OPTION_ACCESS_SLUG = 'wp_activity_logger_access_slug';
     public const OPTION_OWNER_USER_ID = 'wp_activity_logger_owner_user_id';
     public const OPTION_SHOW_ACCESS_NOTICE = 'wp_activity_logger_show_access_notice';
@@ -341,6 +342,8 @@ final class WPActivityLogger
             return;
         }
 
+        wp_activity_logger_delete_expired_logs($this->get_log_retention_days());
+
         $update = $this->update_checker->checkForUpdates();
         if ($update === null) {
             return;
@@ -616,6 +619,13 @@ final class WPActivityLogger
         }
 
         return $next_run->getTimestamp();
+    }
+
+    private function get_log_retention_days(): int
+    {
+        $days = (int) apply_filters('wp_activity_logger_retention_days', self::LOG_RETENTION_DAYS);
+
+        return max(1, $days);
     }
 
     public function maybe_save_security_settings(): void

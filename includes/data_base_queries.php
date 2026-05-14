@@ -206,3 +206,18 @@ function wp_activity_logger_prepare_sql(string $sql, array $params): string
 
     return $wpdb->prepare($sql, $params);
 }
+
+function wp_activity_logger_delete_expired_logs(int $retention_days): void
+{
+    global $wpdb;
+
+    $table_name = $wpdb->prefix . 'activity_logs';
+    $cutoff = gmdate('Y-m-d H:i:s', time() - ($retention_days * DAY_IN_SECONDS));
+
+    $wpdb->query(
+        $wpdb->prepare(
+            "DELETE FROM {$table_name} WHERE created_at < %s",
+            $cutoff
+        )
+    );
+}
