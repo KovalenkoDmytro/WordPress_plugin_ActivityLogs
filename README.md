@@ -111,19 +111,19 @@ The private update server should host a JSON file like this:
 ```json
 {
   "name": "WP Activity Logger",
-  "version": "2.3",
+  "version": "2.4",
   "download_url": "https://wp-plugins.dmytro-kovalenko.ca/wp-logs.zip",
   "homepage": "https://wp-plugins.dmytro-kovalenko.ca/",
   "details_url": "https://wp-plugins.dmytro-kovalenko.ca/",
   "requires": "6.0",
   "requires_php": "8.1",
   "tested": "6.6",
-  "last_updated": "2026-05-14 14:05:00",
-  "upgrade_notice": "Adds a hidden Logs link on the Plugins screen plus Edmonton timestamps and 30-day cleanup.",
+  "last_updated": "2026-05-14 14:35:00",
+  "upgrade_notice": "Improves post update logging so settings and metadata changes are no longer missed.",
   "author": "Dmytro Kovalenko",
   "author_homepage": "https://dmytro-kovalenko.com/",
   "sections": {
-    "description": "Protected WordPress activity logger with a hidden owner-only audit screen, a subtle Logs link on the Plugins screen, Edmonton-based timestamps, nightly private-server updates, and automatic cleanup of logs older than 30 days.",
+    "description": "Protected WordPress activity logger with a hidden owner-only audit screen, a subtle Logs link on the Plugins screen, Edmonton-based timestamps, more reliable post update logging, nightly private-server updates, and automatic cleanup of logs older than 30 days.",
     "installation": "",
     "changelog": "",
     "custom_section": ""

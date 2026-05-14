@@ -3,7 +3,7 @@
  * Plugin Name: WP Activity Logger
  * Plugin URI: https://github.com/KovalenkoDmytro/wp_logs_plugin
  * Description: Records key site activity and provides a protected activity log screen for site owners.
- * Version: 2.3
+ * Version: 2.4
  * Author: Dmytro Kovalenko
  * Author URI: https://dmytro-kovalenko.ca
  * License: GPL2
@@ -37,7 +37,7 @@ require_once __DIR__ . '/plugin-update-checker-master/plugin-update-checker.php'
 
 final class WPActivityLogger
 {
-    public const VERSION = '2.3';
+    public const VERSION = '2.4';
     public const VIEW_CAPABILITY = 'manage_options';
     public const NIGHTLY_UPDATE_HOOK = 'wp_activity_logger_nightly_update';
     public const LOG_RETENTION_DAYS = 30;
@@ -411,28 +411,16 @@ final class WPActivityLogger
 
     public function log_post_update(int $post_id, object $post_after, object $post_before): void
     {
-        if ($post_after->post_status === 'auto-draft') {
+        if (
+            $post_after->post_status === 'auto-draft'
+            || wp_is_post_revision($post_id)
+            || wp_is_post_autosave($post_id)
+        ) {
             return;
         }
 
         $current_user = wp_get_current_user();
-        $changes = [];
-
-        if ($post_before->post_title !== $post_after->post_title) {
-            $changes[] = sprintf(
-                "title changed from '%s' to '%s'",
-                $post_before->post_title,
-                $post_after->post_title
-            );
-        }
-
-        if ($post_before->post_content !== $post_after->post_content) {
-            $changes[] = 'content updated';
-        }
-
-        if ($changes === []) {
-            return;
-        }
+        $changes = $this->detect_post_changes($post_before, $post_after);
 
         $this->record_activity(
             sprintf(
@@ -440,14 +428,19 @@ final class WPActivityLogger
                 $current_user->user_login,
                 $post_id,
                 get_permalink($post_id) ?: home_url(sprintf('/?p=%d', $post_id)),
-                implode(', ', $changes)
+                $changes
             )
         );
     }
 
     public function log_post_creation(int $post_id, \WP_Post $post, bool $update): void
     {
-        if ($update || $post->post_status === 'auto-draft') {
+        if (
+            $update
+            || $post->post_status === 'auto-draft'
+            || wp_is_post_revision($post_id)
+            || wp_is_post_autosave($post_id)
+        ) {
             return;
         }
 
@@ -549,6 +542,69 @@ final class WPActivityLogger
     private function record_activity(string $message): void
     {
         wp_activity_logger_record_activity($message);
+    }
+
+    private function detect_post_changes(object $post_before, object $post_after): string
+    {
+        $changes = [];
+
+        if ($post_before->post_title !== $post_after->post_title) {
+            $changes[] = sprintf(
+                "title changed from '%s' to '%s'",
+                $post_before->post_title,
+                $post_after->post_title
+            );
+        }
+
+        if ($post_before->post_content !== $post_after->post_content) {
+            $changes[] = 'content updated';
+        }
+
+        if (($post_before->post_excerpt ?? '') !== ($post_after->post_excerpt ?? '')) {
+            $changes[] = 'excerpt updated';
+        }
+
+        if (($post_before->post_status ?? '') !== ($post_after->post_status ?? '')) {
+            $changes[] = sprintf(
+                "status changed from '%s' to '%s'",
+                $post_before->post_status,
+                $post_after->post_status
+            );
+        }
+
+        if (($post_before->post_name ?? '') !== ($post_after->post_name ?? '')) {
+            $changes[] = sprintf(
+                "slug changed from '%s' to '%s'",
+                $post_before->post_name,
+                $post_after->post_name
+            );
+        }
+
+        if (($post_before->menu_order ?? 0) !== ($post_after->menu_order ?? 0)) {
+            $changes[] = 'menu order updated';
+        }
+
+        if (($post_before->post_parent ?? 0) !== ($post_after->post_parent ?? 0)) {
+            $changes[] = 'parent updated';
+        }
+
+        if (($post_before->post_author ?? 0) !== ($post_after->post_author ?? 0)) {
+            $changes[] = 'author updated';
+        }
+
+        if (($post_before->comment_status ?? '') !== ($post_after->comment_status ?? '')) {
+            $changes[] = 'comment settings updated';
+        }
+
+        if (($post_before->ping_status ?? '') !== ($post_after->ping_status ?? '')) {
+            $changes[] = 'ping settings updated';
+        }
+
+        if ($changes !== []) {
+            return implode(', ', $changes);
+        }
+
+        return 'post settings or metadata updated';
     }
 
     private function is_page_request(): bool
