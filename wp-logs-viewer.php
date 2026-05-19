@@ -3,7 +3,7 @@
  * Plugin Name: WP Activity Logger
  * Plugin URI: https://github.com/KovalenkoDmytro/wp_logs_plugin
  * Description: Records key site activity and provides a protected activity log screen for site owners.
- * Version: 2.4
+ * Version: 2.6
  * Author: Dmytro Kovalenko
  * Author URI: https://dmytro-kovalenko.ca
  * License: GPL2
@@ -37,7 +37,7 @@ require_once __DIR__ . '/plugin-update-checker-master/plugin-update-checker.php'
 
 final class WPActivityLogger
 {
-    public const VERSION = '2.4';
+    public const VERSION = '2.6';
     public const VIEW_CAPABILITY = 'manage_options';
     public const NIGHTLY_UPDATE_HOOK = 'wp_activity_logger_nightly_update';
     public const LOG_RETENTION_DAYS = 30;
@@ -386,7 +386,7 @@ final class WPActivityLogger
     private function register_logging_hooks(): void
     {
         add_action('wp_login', [$this, 'log_login'], 10, 2);
-        add_action('wp_logout', [$this, 'log_logout']);
+        add_action('wp_logout', [$this, 'log_logout'], 10, 1);
         add_action('post_updated', [$this, 'log_post_update'], 10, 3);
         add_action('wp_insert_post', [$this, 'log_post_creation'], 10, 3);
         add_action('wp_trash_post', [$this, 'log_post_trash']);
@@ -396,17 +396,23 @@ final class WPActivityLogger
         add_action('upgrader_process_complete', [$this, 'log_plugin_deletion'], 10, 2);
     }
 
-    public function log_login(string $user_login): void
+    public function log_login(string $user_login, \WP_User $user): void
     {
-        $this->record_activity(sprintf("User '%s' logged in.", $user_login));
+        $this->record_activity(
+            sprintf("User '%s' logged in.", $user_login),
+            (int) $user->ID
+        );
     }
 
-    public function log_logout(): void
+    public function log_logout(int $user_id): void
     {
-        $current_user = wp_get_current_user();
-        $login = $current_user->user_login ?: 'Unknown user';
+        $actor = $this->get_actor_from_user_id($user_id);
+        $actor_text = $this->format_actor_text($actor['label'], $actor['id']);
 
-        $this->record_activity(sprintf("User '%s' logged out.", $login));
+        $this->record_activity(
+            sprintf('%s logged out.', $actor_text),
+            $actor['id']
+        );
     }
 
     public function log_post_update(int $post_id, object $post_after, object $post_before): void
@@ -419,17 +425,19 @@ final class WPActivityLogger
             return;
         }
 
-        $current_user = wp_get_current_user();
+        $actor = $this->get_current_actor();
         $changes = $this->detect_post_changes($post_before, $post_after);
+        $actor_text = $this->format_actor_text($actor['label'], $actor['id']);
 
         $this->record_activity(
             sprintf(
-                "User '%s' updated post ID %d (%s): %s.",
-                $current_user->user_login,
+                '%s updated post ID %d (%s): %s.',
+                $actor_text,
                 $post_id,
                 get_permalink($post_id) ?: home_url(sprintf('/?p=%d', $post_id)),
                 $changes
-            )
+            ),
+            $actor['id']
         );
     }
 
@@ -444,21 +452,24 @@ final class WPActivityLogger
             return;
         }
 
-        $current_user = wp_get_current_user();
+        $actor = $this->get_current_actor();
+        $actor_text = $this->format_actor_text($actor['label'], $actor['id']);
         $this->record_activity(
             sprintf(
-                "User '%s' created post ID %d (%s) with title '%s'.",
-                $current_user->user_login,
+                "%s created post ID %d (%s) with title '%s'.",
+                $actor_text,
                 $post_id,
                 get_permalink($post_id) ?: home_url(sprintf('/?p=%d', $post_id)),
                 $post->post_title
-            )
+            ),
+            $actor['id']
         );
     }
 
     public function log_post_trash(int $post_id): void
     {
-        $current_user = wp_get_current_user();
+        $actor = $this->get_current_actor();
+        $actor_text = $this->format_actor_text($actor['label'], $actor['id']);
         $post = get_post($post_id);
 
         if (! $post instanceof \WP_Post) {
@@ -467,17 +478,19 @@ final class WPActivityLogger
 
         $this->record_activity(
             sprintf(
-                "User '%s' moved post ID %d with title '%s' to the trash.",
-                $current_user->user_login,
+                "%s moved post ID %d with title '%s' to the trash.",
+                $actor_text,
                 $post_id,
                 $post->post_title
-            )
+            ),
+            $actor['id']
         );
     }
 
     public function log_post_deletion(int $post_id): void
     {
-        $current_user = wp_get_current_user();
+        $actor = $this->get_current_actor();
+        $actor_text = $this->format_actor_text($actor['label'], $actor['id']);
         $post = get_post($post_id);
 
         if (! $post instanceof \WP_Post || $post->post_status === 'trash') {
@@ -486,36 +499,41 @@ final class WPActivityLogger
 
         $this->record_activity(
             sprintf(
-                "User '%s' permanently deleted post ID %d (%s) with title '%s'.",
-                $current_user->user_login,
+                "%s permanently deleted post ID %d (%s) with title '%s'.",
+                $actor_text,
                 $post_id,
                 get_permalink($post_id) ?: home_url(sprintf('/?p=%d', $post_id)),
                 $post->post_title
-            )
+            ),
+            $actor['id']
         );
     }
 
     public function log_plugin_activation(string $plugin): void
     {
-        $current_user = wp_get_current_user();
+        $actor = $this->get_current_actor();
+        $actor_text = $this->format_actor_text($actor['label'], $actor['id']);
         $this->record_activity(
             sprintf(
-                "User '%s' activated plugin '%s'.",
-                $current_user->user_login,
+                "%s activated plugin '%s'.",
+                $actor_text,
                 plugin_basename($plugin)
-            )
+            ),
+            $actor['id']
         );
     }
 
     public function log_plugin_deactivation(string $plugin): void
     {
-        $current_user = wp_get_current_user();
+        $actor = $this->get_current_actor();
+        $actor_text = $this->format_actor_text($actor['label'], $actor['id']);
         $this->record_activity(
             sprintf(
-                "User '%s' deactivated plugin '%s'.",
-                $current_user->user_login,
+                "%s deactivated plugin '%s'.",
+                $actor_text,
                 plugin_basename($plugin)
-            )
+            ),
+            $actor['id']
         );
     }
 
@@ -525,23 +543,78 @@ final class WPActivityLogger
             return;
         }
 
-        $current_user = wp_get_current_user();
+        $actor = $this->get_current_actor();
+        $actor_text = $this->format_actor_text($actor['label'], $actor['id']);
         $deleted_plugins = isset($options['plugins']) && is_array($options['plugins'])
             ? implode(', ', array_map('plugin_basename', $options['plugins']))
             : 'Unknown plugins';
 
         $this->record_activity(
             sprintf(
-                "User '%s' deleted plugin(s): %s.",
-                $current_user->user_login,
+                '%s deleted plugin(s): %s.',
+                $actor_text,
                 $deleted_plugins
-            )
+            ),
+            $actor['id']
         );
     }
 
-    private function record_activity(string $message): void
+    private function record_activity(string $message, ?int $user_id = null): void
     {
-        wp_activity_logger_record_activity($message);
+        wp_activity_logger_record_activity($message, $user_id);
+    }
+
+    private function get_current_actor(): array
+    {
+        $current_user = wp_get_current_user();
+        if ($current_user instanceof \WP_User && $current_user->exists() && $current_user->user_login !== '') {
+            return [
+                'id' => (int) $current_user->ID,
+                'label' => $current_user->user_login,
+            ];
+        }
+
+        return [
+            'id' => null,
+            'label' => $this->get_system_actor_label(),
+        ];
+    }
+
+    private function get_actor_from_user_id(int $user_id): array
+    {
+        if ($user_id > 0) {
+            $user = get_userdata($user_id);
+            if ($user instanceof \WP_User && $user->user_login !== '') {
+                return [
+                    'id' => $user_id,
+                    'label' => $user->user_login,
+                ];
+            }
+
+            return [
+                'id' => $user_id,
+                'label' => sprintf('Deleted user #%d', $user_id),
+            ];
+        }
+
+        return [
+            'id' => null,
+            'label' => $this->get_system_actor_label(),
+        ];
+    }
+
+    private function get_system_actor_label(): string
+    {
+        return __('System', 'wp-activity-logger');
+    }
+
+    private function format_actor_text(string $actor_label, ?int $user_id): string
+    {
+        if ($user_id === null) {
+            return $actor_label;
+        }
+
+        return sprintf("User '%s'", $actor_label);
     }
 
     private function detect_post_changes(object $post_before, object $post_after): string

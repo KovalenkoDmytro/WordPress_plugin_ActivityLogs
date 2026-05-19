@@ -24,22 +24,22 @@ function wp_activity_logger_install(): void
     dbDelta($sql);
 }
 
-function wp_activity_logger_record_activity(string $activity): void
+function wp_activity_logger_record_activity(string $activity, ?int $user_id = null): void
 {
-    if (! is_user_logged_in()) {
-        return;
-    }
-
     global $wpdb;
 
     $table_name = $wpdb->prefix . 'activity_logs';
-    $user_id = get_current_user_id();
+    $resolved_user_id = $user_id ?? get_current_user_id();
+    if ($resolved_user_id < 0) {
+        $resolved_user_id = 0;
+    }
+
     $ip_address = sanitize_text_field($_SERVER['REMOTE_ADDR'] ?? 'Unknown');
 
     $wpdb->insert(
         $table_name,
         [
-            'user_id' => $user_id,
+            'user_id' => $resolved_user_id,
             'activity' => $activity,
             'ip_address' => $ip_address,
             'created_at' => current_time('mysql', true),
@@ -120,13 +120,21 @@ function wp_activity_logger_get_logs_payload(array $filters): array
 
     return [
         'items' => array_map(
-            static fn (object $row): array => [
-                'id' => (int) $row->id,
-                'user' => $row->user_login ?: __('Unknown user', 'wp-activity-logger'),
-                'activity' => (string) $row->activity,
-                'ipAddress' => (string) $row->ip_address,
-                'createdAt' => wp_activity_logger_format_timestamp((string) $row->created_at),
-            ],
+            static function (object $row): array {
+                $user_id = (int) $row->user_id;
+                $user_label = wp_activity_logger_resolve_user_label(
+                    $user_id,
+                    is_string($row->user_login) ? $row->user_login : ''
+                );
+
+                return [
+                    'id' => (int) $row->id,
+                    'user' => $user_label,
+                    'activity' => wp_activity_logger_normalize_activity_text((string) $row->activity, $user_label),
+                    'ipAddress' => (string) $row->ip_address,
+                    'createdAt' => wp_activity_logger_format_timestamp((string) $row->created_at),
+                ];
+            },
             $rows
         ),
         'metrics' => [
@@ -219,6 +227,34 @@ function wp_activity_logger_prepare_sql(string $sql, array $params): string
     }
 
     return $wpdb->prepare($sql, $params);
+}
+
+function wp_activity_logger_resolve_user_label(int $user_id, string $user_login): string
+{
+    if ($user_login !== '') {
+        return $user_login;
+    }
+
+    if ($user_id === 0) {
+        return __('System', 'wp-activity-logger');
+    }
+
+    return sprintf(
+        /* translators: %d: WordPress user ID */
+        __('Deleted user #%d', 'wp-activity-logger'),
+        $user_id
+    );
+}
+
+function wp_activity_logger_normalize_activity_text(string $activity, string $user_label): string
+{
+    $normalized = preg_replace("/^User\\s+(?:''|\"\")\\s+/", $user_label . ' ', $activity, 1, $count);
+
+    if (is_string($normalized) && $count === 1) {
+        return $normalized;
+    }
+
+    return $activity;
 }
 
 function wp_activity_logger_delete_expired_logs(int $retention_days): void
