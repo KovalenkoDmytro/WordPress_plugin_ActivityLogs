@@ -8,7 +8,7 @@ if (! defined('ABSPATH')) {
 
 final class WPActivityLoggerPlugin
 {
-    public const VERSION = '2.6.1';
+    public const VERSION = '2.6.2';
     public const VIEW_CAPABILITY = 'manage_options';
     public const NIGHTLY_MAINTENANCE_HOOK = 'wp_activity_logger_nightly_maintenance';
     public const LOG_RETENTION_DAYS = 30;

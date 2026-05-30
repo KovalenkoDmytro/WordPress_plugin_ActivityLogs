@@ -42,7 +42,7 @@ function wp_activity_logger_record_activity(string $activity, ?int $user_id = nu
         ? sanitize_text_field(wp_unslash((string) $_SERVER['REMOTE_ADDR']))
         : 'Unknown';
 
-    // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- Custom plugin table writes are required for the activity log.
+    // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery -- Writing to the plugin's custom activity log table; WordPress has no higher-level API for it.
     $wpdb->insert(
         $table_name,
         [
@@ -70,66 +70,51 @@ function wp_activity_logger_get_logs_payload(array $filters): array
     $current_page = max(1, (int) ($filters['paged'] ?? 1));
     $offset = ($current_page - 1) * $rows_per_page;
 
-    [$where_sql, $where_params] = wp_activity_logger_build_where_clause($filters);
+    $where_params = wp_activity_logger_build_where_params($filters);
 
-    $orderable_columns = [
-        'id' => 'logs.id',
-        'user' => 'users.user_login',
-        'activity' => 'logs.activity',
-        'ip_address' => 'logs.ip_address',
-        'created_at' => 'logs.created_at',
+    // Map each sortable column to a (table alias, column) pair so the ORDER BY target can be
+    // passed as %i.%i identifier placeholders instead of being interpolated into the query.
+    $order_identifiers = [
+        'id' => ['logs', 'id'],
+        'user' => ['users', 'user_login'],
+        'activity' => ['logs', 'activity'],
+        'ip_address' => ['logs', 'ip_address'],
+        'created_at' => ['logs', 'created_at'],
     ];
 
-    $order_by = $filters['order_by'] ?? 'created_at';
-    $order_column = $orderable_columns[$order_by] ?? $orderable_columns['created_at'];
-    $order = strtoupper((string) ($filters['order'] ?? 'DESC')) === 'ASC' ? 'ASC' : 'DESC';
+    $order_key = (string) ($filters['order_by'] ?? 'created_at');
+    [$order_table, $order_field] = $order_identifiers[$order_key] ?? $order_identifiers['created_at'];
+    $is_ascending = strtoupper((string) ($filters['order'] ?? 'DESC')) === 'ASC';
 
-    // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Real-time metrics come from the custom activity log table.
-    $total_logs = (int) $wpdb->get_var(
-        $wpdb->prepare(
-            "
-            SELECT COUNT(*)
-            FROM {$table_name} AS logs
-            LEFT JOIN {$users_table} AS users ON users.ID = logs.user_id
-            WHERE {$where_sql}
-            ",
-            ...$where_params
-        )
-    );
+    // Every dynamic part of these queries is a real placeholder: table/column names use %i,
+    // filter values use %s (built by wp_activity_logger_build_where_params()), LIMIT/OFFSET use %d.
+    // The WHERE clause is a fixed literal: the created_at range always applies (with DATETIME
+    // min/max bounds when unset) and each text filter self-disables via a `%s = ''` guard that
+    // short-circuits to TRUE. No PHP variable is ever interpolated into the SQL string.
+    // Direct, uncached reads are required for live activity-log data.
 
-    // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Table names and ORDER BY fragments are whitelisted; dynamic values use placeholders.
-    // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Real-time log browsing reads from the custom activity log table.
-    $rows = $wpdb->get_results(
-        $wpdb->prepare(
-            "
-            SELECT logs.id, logs.user_id, logs.activity, logs.ip_address, logs.created_at, users.user_login
-            FROM {$table_name} AS logs
-            LEFT JOIN {$users_table} AS users ON users.ID = logs.user_id
-            WHERE {$where_sql}
-            ORDER BY {$order_column} {$order}
-            LIMIT %d OFFSET %d
-            ",
-            ...array_merge($where_params, [$rows_per_page, $offset])
-        )
-    );
+    // ReplacementsWrongNumber is a false positive: the spread (...$where_params) carries the
+    // remaining placeholder values, which PHPCS cannot count statically. The count is correct.
+    // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber
+    $metrics_row = $wpdb->get_row($wpdb->prepare("SELECT COUNT(*) AS total_logs, COUNT(DISTINCT logs.user_id) AS unique_users, COUNT(DISTINCT logs.ip_address) AS unique_ips, MAX(logs.created_at) AS latest_activity FROM %i AS logs LEFT JOIN %i AS users ON users.ID = logs.user_id WHERE 1 = 1 AND logs.created_at >= %s AND logs.created_at <= %s AND (%s = '' OR users.user_login LIKE %s) AND (%s = '' OR logs.activity LIKE %s OR logs.ip_address LIKE %s OR users.user_login LIKE %s) AND (%s = '' OR logs.ip_address LIKE %s)", $table_name, $users_table, ...$where_params));
 
-    // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Real-time metrics come from the custom activity log table.
-    $metrics_row = $wpdb->get_row(
-        $wpdb->prepare(
-            "
-            SELECT
-                COUNT(*) AS total_logs,
-                COUNT(DISTINCT logs.user_id) AS unique_users,
-                COUNT(DISTINCT logs.ip_address) AS unique_ips,
-                MAX(logs.created_at) AS latest_activity
-            FROM {$table_name} AS logs
-            LEFT JOIN {$users_table} AS users ON users.ID = logs.user_id
-            WHERE {$where_sql}
-            ",
-            ...$where_params
-        )
-    );
+    $total_logs = (int) ($metrics_row->total_logs ?? 0);
     $total_pages = max(1, (int) ceil($total_logs / $rows_per_page));
+
+    $rows_params = array_merge(
+        [$table_name, $users_table],
+        $where_params,
+        [$order_table, $order_field, $rows_per_page, $offset]
+    );
+
+    // ReplacementsWrongNumber is a false positive here too: ...$rows_params holds every value.
+    if ($is_ascending) {
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber
+        $rows = $wpdb->get_results($wpdb->prepare("SELECT logs.id, logs.user_id, logs.activity, logs.ip_address, logs.created_at, users.user_login FROM %i AS logs LEFT JOIN %i AS users ON users.ID = logs.user_id WHERE 1 = 1 AND logs.created_at >= %s AND logs.created_at <= %s AND (%s = '' OR users.user_login LIKE %s) AND (%s = '' OR logs.activity LIKE %s OR logs.ip_address LIKE %s OR users.user_login LIKE %s) AND (%s = '' OR logs.ip_address LIKE %s) ORDER BY %i.%i ASC LIMIT %d OFFSET %d", ...$rows_params));
+    } else {
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQLPlaceholders.ReplacementsWrongNumber
+        $rows = $wpdb->get_results($wpdb->prepare("SELECT logs.id, logs.user_id, logs.activity, logs.ip_address, logs.created_at, users.user_login FROM %i AS logs LEFT JOIN %i AS users ON users.ID = logs.user_id WHERE 1 = 1 AND logs.created_at >= %s AND logs.created_at <= %s AND (%s = '' OR users.user_login LIKE %s) AND (%s = '' OR logs.activity LIKE %s OR logs.ip_address LIKE %s OR users.user_login LIKE %s) AND (%s = '' OR logs.ip_address LIKE %s) ORDER BY %i.%i DESC LIMIT %d OFFSET %d", ...$rows_params));
+    }
 
     return [
         'items' => array_map(
@@ -156,7 +141,7 @@ function wp_activity_logger_get_logs_payload(array $filters): array
             'uniqueIps' => (int) ($metrics_row->unique_ips ?? 0),
             'latestActivity' => ! empty($metrics_row->latest_activity)
                 ? wp_activity_logger_format_timestamp((string) $metrics_row->latest_activity)
-                : __('No activity yet', 'wp-logs'),
+                : __('No activity yet', 'dk-user-activity-logger'),
         ],
         'pagination' => [
             'currentPage' => $current_page,
@@ -167,53 +152,45 @@ function wp_activity_logger_get_logs_payload(array $filters): array
     ];
 }
 
-function wp_activity_logger_build_where_clause(array $filters): array
+/**
+ * Build the ordered replacement values for the fixed WHERE clause used by the log queries.
+ *
+ * The clause keeps a constant shape so the SQL string never has to be assembled from
+ * variables. The created_at range always applies, falling back to the DATETIME min/max
+ * bounds when a date filter is absent (an empty string cannot be compared to a DATETIME
+ * column under MySQL strict mode). Each text filter contributes a guard value — an empty
+ * string short-circuits its condition to TRUE — followed by its comparison value(s).
+ *
+ * @param array<string, mixed> $filters
+ *
+ * @return list<string>
+ */
+function wp_activity_logger_build_where_params(array $filters): array
 {
     global $wpdb;
 
-    $clauses = ['1=1'];
-    $params = [];
-
-    $start_date = (string) ($filters['start_date'] ?? '');
-    if ($start_date !== '') {
-        $start_boundary = wp_activity_logger_get_utc_date_boundary($start_date, false);
-        if ($start_boundary !== null) {
-            $clauses[] = 'logs.created_at >= %s';
-            $params[] = $start_boundary;
-        }
-    }
-
-    $end_date = (string) ($filters['end_date'] ?? '');
-    if ($end_date !== '') {
-        $end_boundary = wp_activity_logger_get_utc_date_boundary($end_date, true);
-        if ($end_boundary !== null) {
-            $clauses[] = 'logs.created_at <= %s';
-            $params[] = $end_boundary;
-        }
-    }
-
+    $start_boundary = wp_activity_logger_get_utc_date_boundary((string) ($filters['start_date'] ?? ''), false) ?? '1000-01-01 00:00:00';
+    $end_boundary = wp_activity_logger_get_utc_date_boundary((string) ($filters['end_date'] ?? ''), true) ?? '9999-12-31 23:59:59';
     $username = (string) ($filters['username'] ?? '');
-    if ($username !== '') {
-        $clauses[] = 'users.user_login LIKE %s';
-        $params[] = '%' . $wpdb->esc_like($username) . '%';
-    }
-
     $search = (string) ($filters['search'] ?? '');
-    if ($search !== '') {
-        $like = '%' . $wpdb->esc_like($search) . '%';
-        $clauses[] = '(logs.activity LIKE %s OR logs.ip_address LIKE %s OR users.user_login LIKE %s)';
-        $params[] = $like;
-        $params[] = $like;
-        $params[] = $like;
-    }
-
     $ip_address = (string) ($filters['ip_address'] ?? '');
-    if ($ip_address !== '') {
-        $clauses[] = 'logs.ip_address LIKE %s';
-        $params[] = '%' . $wpdb->esc_like($ip_address) . '%';
-    }
 
-    return [implode(' AND ', $clauses), $params];
+    $username_like = '%' . $wpdb->esc_like($username) . '%';
+    $search_like = '%' . $wpdb->esc_like($search) . '%';
+    $ip_like = '%' . $wpdb->esc_like($ip_address) . '%';
+
+    return [
+        $start_boundary,
+        $end_boundary,
+        $username,
+        $username_like,
+        $search,
+        $search_like,
+        $search_like,
+        $search_like,
+        $ip_address,
+        $ip_like,
+    ];
 }
 
 function wp_activity_logger_format_timestamp(string $timestamp): string
@@ -238,12 +215,12 @@ function wp_activity_logger_resolve_user_label(int $user_id, string $user_login)
     }
 
     if ($user_id === 0) {
-        return __('System', 'wp-logs');
+        return __('System', 'dk-user-activity-logger');
     }
 
     return sprintf(
         /* translators: %d: WordPress user ID */
-        __('Deleted user #%d', 'wp-logs'),
+        __('Deleted user #%d', 'dk-user-activity-logger'),
         $user_id
     );
 }
@@ -266,11 +243,11 @@ function wp_activity_logger_delete_expired_logs(int $retention_days): void
     $table_name = $wpdb->prefix . 'activity_logs';
     $cutoff = gmdate('Y-m-d H:i:s', time() - ($retention_days * DAY_IN_SECONDS));
 
-    // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Table name comes from $wpdb->prefix and is not user input.
-    // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Scheduled cleanup deletes expired rows from the custom activity log table.
+    // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Scheduled cleanup deletes expired rows from the custom activity log table.
     $wpdb->query(
         $wpdb->prepare(
-            "DELETE FROM {$table_name} WHERE created_at < %s",
+            'DELETE FROM %i WHERE created_at < %s',
+            $table_name,
             $cutoff
         )
     );

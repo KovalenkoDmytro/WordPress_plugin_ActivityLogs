@@ -109,8 +109,8 @@ final class WPActivityLoggerAdminService
 
         add_submenu_page(
             'tools.php',
-            __('Activity Logs', 'wp-logs'),
-            __('Activity Logs', 'wp-logs'),
+            __('Activity Logs', 'dk-user-activity-logger'),
+            __('Activity Logs', 'dk-user-activity-logger'),
             WPActivityLoggerPlugin::VIEW_CAPABILITY,
             $this->get_access_slug(),
             'wp_activity_logger_admin_page'
@@ -152,12 +152,12 @@ final class WPActivityLoggerAdminService
                 'siteDateFormat' => trim(get_option('date_format') . ' ' . get_option('time_format')),
                 'timezone' => $this->get_timezone_name(),
                 'strings' => [
-                    'loading' => __('Refreshing logs...', 'wp-logs'),
-                    'ready' => __('Live refresh ready', 'wp-logs'),
-                    'updated' => __('Updated just now', 'wp-logs'),
-                    'empty' => __('No matching logs found.', 'wp-logs'),
-                    'error' => __('Could not refresh the logs right now.', 'wp-logs'),
-                    'locked' => __('This screen is locked.', 'wp-logs'),
+                    'loading' => __('Refreshing logs...', 'dk-user-activity-logger'),
+                    'ready' => __('Live refresh ready', 'dk-user-activity-logger'),
+                    'updated' => __('Updated just now', 'dk-user-activity-logger'),
+                    'empty' => __('No matching logs found.', 'dk-user-activity-logger'),
+                    'error' => __('Could not refresh the logs right now.', 'dk-user-activity-logger'),
+                    'locked' => __('This screen is locked.', 'dk-user-activity-logger'),
                 ],
             ]
         );
@@ -172,7 +172,7 @@ final class WPActivityLoggerAdminService
         $admin_bar->add_node(
             [
                 'id' => 'wp-logs',
-                'title' => __('Activity Logs', 'wp-logs'),
+                'title' => __('Activity Logs', 'dk-user-activity-logger'),
                 'href' => $this->get_admin_page_url(),
                 'meta' => [
                     'class' => 'wp-logs-admin-bar-link',
@@ -193,26 +193,26 @@ final class WPActivityLoggerAdminService
         );
 
         echo '<div class="notice notice-success is-dismissible">';
-        echo '<p><strong>' . esc_html__('DK User Activity Logger is ready to use.', 'wp-logs') . '</strong></p>';
-        echo '<p>' . esc_html__('Open Activity Logs from the Tools menu, or use this direct link:', 'wp-logs') . '</p>';
+        echo '<p><strong>' . esc_html__('DK User Activity Logger is ready to use.', 'dk-user-activity-logger') . '</strong></p>';
+        echo '<p>' . esc_html__('Open Activity Logs from the Tools menu, or use this direct link:', 'dk-user-activity-logger') . '</p>';
         echo '<p><a href="' . esc_url($this->get_admin_page_url()) . '">' . esc_html($this->get_admin_page_url()) . '</a></p>';
 
         if ($this->is_password_required()) {
-            echo '<p>' . esc_html__('This screen also requires your access password.', 'wp-logs') . '</p>';
+            echo '<p>' . esc_html__('This screen also requires your access password.', 'dk-user-activity-logger') . '</p>';
         }
 
-        echo '<p><a href="' . esc_url($dismiss_url) . '">' . esc_html__('Dismiss this notice', 'wp-logs') . '</a></p>';
+        echo '<p><a href="' . esc_url($dismiss_url) . '">' . esc_html__('Dismiss this notice', 'dk-user-activity-logger') . '</a></p>';
         echo '</div>';
     }
 
     public function handle_fetch_logs(): void
     {
         if (! $this->is_owner_viewer()) {
-            wp_send_json_error(['message' => __('You are not allowed to view these logs.', 'wp-logs')], 403);
+            wp_send_json_error(['message' => __('You are not allowed to view these logs.', 'dk-user-activity-logger')], 403);
         }
 
         if ($this->is_password_required() && ! $this->is_screen_unlocked()) {
-            wp_send_json_error(['message' => __('The log screen is locked.', 'wp-logs')], 423);
+            wp_send_json_error(['message' => __('The log screen is locked.', 'dk-user-activity-logger')], 423);
         }
 
         check_ajax_referer('wp_activity_logger_fetch_logs', 'nonce');
@@ -233,7 +233,7 @@ final class WPActivityLoggerAdminService
         $plugin_meta[] = sprintf(
             '<a href="%s">%s</a>',
             esc_url($this->get_admin_page_url()),
-            esc_html__('Logs', 'wp-logs')
+            esc_html__('Logs', 'dk-user-activity-logger')
         );
 
         return $plugin_meta;

@@ -1,10 +1,10 @@
 === DK User Activity Logger ===
 Contributors: dmytrokovalenko
 Tags: activity log, audit log, security, logging, monitoring
-Requires at least: 6.0
+Requires at least: 6.2
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 2.6.1
+Stable tag: 2.6.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -63,6 +63,11 @@ Yes. The plugin defaults to `America/Edmonton`, but the owner can choose a diffe
 
 == Changelog ==
 
+= 2.6.2 =
+
+* Harden the activity log queries so every dynamic value uses a $wpdb->prepare() placeholder.
+* Require WordPress 6.2+ for identifier (%i) placeholder support.
+
 = 2.6.1 =
 
 * Prepare the plugin for WordPress.org distribution.
@@ -76,6 +81,10 @@ Yes. The plugin defaults to `America/Edmonton`, but the owner can choose a diffe
 * Preserve Edmonton-based timestamps and filtering behavior.
 
 == Upgrade Notice ==
+
+= 2.6.2 =
+
+This release hardens the database queries and now requires WordPress 6.2 or newer.
 
 = 2.6.1 =
 

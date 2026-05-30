@@ -228,7 +228,7 @@ final class WPActivityLoggerEventLogger
 
     private function get_system_actor_label(): string
     {
-        return __('System', 'wp-logs');
+        return __('System', 'dk-user-activity-logger');
     }
 
     private function format_actor_text(string $actor_label, ?int $user_id): string

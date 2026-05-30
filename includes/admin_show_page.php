@@ -37,14 +37,14 @@ function wp_activity_logger_normalize_filters(array $source): array
 function wp_activity_logger_admin_page(): void
 {
     if (! wp_activity_logger()->can_view_logs()) {
-        wp_die(esc_html__('You are not allowed to view these logs.', 'wp-logs'));
+        wp_die(esc_html__('You are not allowed to view these logs.', 'dk-user-activity-logger'));
     }
 
     $page_url = wp_activity_logger()->get_admin_page_url();
     $show_unlock = wp_activity_logger()->is_password_required() && ! wp_activity_logger()->is_screen_unlocked();
 
     echo '<div class="wrap wp-activity-logger-shell">';
-    echo '<h1>' . esc_html__('Activity Logs', 'wp-logs') . '</h1>';
+    echo '<h1>' . esc_html__('Activity Logs', 'dk-user-activity-logger') . '</h1>';
 
     // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only admin notice flag from the current screen URL.
     $has_unlock_error = isset($_GET['wp_activity_logger_access_error']) && sanitize_text_field(wp_unslash($_GET['wp_activity_logger_access_error'])) === '1';
@@ -75,20 +75,20 @@ function wp_activity_logger_admin_page(): void
 function wp_activity_logger_render_unlock_screen(string $page_url, bool $has_error): void
 {
     echo '<div class="wp-activity-logger-lock-card">';
-    echo '<p class="wp-activity-logger-eyebrow">' . esc_html__('Protected screen', 'wp-logs') . '</p>';
-    echo '<h2>' . esc_html__('Unlock the log viewer', 'wp-logs') . '</h2>';
-    echo '<p>' . esc_html__('This viewer is protected with an access password when one is configured.', 'wp-logs') . '</p>';
+    echo '<p class="wp-activity-logger-eyebrow">' . esc_html__('Protected screen', 'dk-user-activity-logger') . '</p>';
+    echo '<h2>' . esc_html__('Unlock the log viewer', 'dk-user-activity-logger') . '</h2>';
+    echo '<p>' . esc_html__('This viewer is protected with an access password when one is configured.', 'dk-user-activity-logger') . '</p>';
 
     if ($has_error) {
-        echo '<div class="notice notice-error inline"><p>' . esc_html__('The password did not match. Try again.', 'wp-logs') . '</p></div>';
+        echo '<div class="notice notice-error inline"><p>' . esc_html__('The password did not match. Try again.', 'dk-user-activity-logger') . '</p></div>';
     }
 
     echo '<form method="post" action="' . esc_url($page_url) . '" class="wp-activity-logger-unlock-form">';
     wp_nonce_field('wp_activity_logger_unlock');
     echo '<input type="hidden" name="wp_activity_logger_unlock" value="1">';
-    echo '<label for="wp-activity-logger-password">' . esc_html__('Access password', 'wp-logs') . '</label>';
+    echo '<label for="wp-activity-logger-password">' . esc_html__('Access password', 'dk-user-activity-logger') . '</label>';
     echo '<input id="wp-activity-logger-password" name="wp_activity_logger_password" type="password" class="regular-text" autocomplete="current-password" required>';
-    echo '<button type="submit" class="button button-primary">' . esc_html__('Unlock logs', 'wp-logs') . '</button>';
+    echo '<button type="submit" class="button button-primary">' . esc_html__('Unlock logs', 'dk-user-activity-logger') . '</button>';
     echo '</form>';
     echo '</div>';
 }
@@ -111,13 +111,13 @@ function wp_activity_logger_render_dashboard(
 
     echo '<section class="wp-activity-logger-hero">';
     echo '<div>';
-    echo '<p class="wp-activity-logger-eyebrow">' . esc_html__('Owner activity monitor', 'wp-logs') . '</p>';
-    echo '<h2>' . esc_html__('A cleaner audit trail for client work', 'wp-logs') . '</h2>';
-    echo '<p>' . esc_html__('Track edits, plugin changes, and login activity from a dedicated Activity Logs screen.', 'wp-logs') . '</p>';
+    echo '<p class="wp-activity-logger-eyebrow">' . esc_html__('Owner activity monitor', 'dk-user-activity-logger') . '</p>';
+    echo '<h2>' . esc_html__('A cleaner audit trail for client work', 'dk-user-activity-logger') . '</h2>';
+    echo '<p>' . esc_html__('Track edits, plugin changes, and login activity from a dedicated Activity Logs screen.', 'dk-user-activity-logger') . '</p>';
     echo '</div>';
     echo '<div class="wp-activity-logger-actions">';
-    echo '<a class="button button-secondary" href="' . esc_url($page_url) . '">' . esc_html__('Reset view', 'wp-logs') . '</a>';
-    echo '<button type="button" class="button button-primary" data-refresh-now>' . esc_html__('Refresh now', 'wp-logs') . '</button>';
+    echo '<a class="button button-secondary" href="' . esc_url($page_url) . '">' . esc_html__('Reset view', 'dk-user-activity-logger') . '</a>';
+    echo '<button type="button" class="button button-primary" data-refresh-now>' . esc_html__('Refresh now', 'dk-user-activity-logger') . '</button>';
     echo '</div>';
     echo '</section>';
 
@@ -125,75 +125,75 @@ function wp_activity_logger_render_dashboard(
     wp_activity_logger_render_timezone_panel($page_url, $timezone_saved, $timezone_error);
 
     echo '<section class="wp-activity-logger-stats">';
-    wp_activity_logger_render_stat_card(__('Total logs', 'wp-logs'), (string) $metrics['totalLogs'], 'total-logs');
-    wp_activity_logger_render_stat_card(__('Users seen', 'wp-logs'), (string) $metrics['uniqueUsers'], 'unique-users');
-    wp_activity_logger_render_stat_card(__('IP addresses', 'wp-logs'), (string) $metrics['uniqueIps'], 'unique-ips');
-    wp_activity_logger_render_stat_card(__('Latest activity', 'wp-logs'), (string) $metrics['latestActivity'], 'latest-activity');
+    wp_activity_logger_render_stat_card(__('Total logs', 'dk-user-activity-logger'), (string) $metrics['totalLogs'], 'total-logs');
+    wp_activity_logger_render_stat_card(__('Users seen', 'dk-user-activity-logger'), (string) $metrics['uniqueUsers'], 'unique-users');
+    wp_activity_logger_render_stat_card(__('IP addresses', 'dk-user-activity-logger'), (string) $metrics['uniqueIps'], 'unique-ips');
+    wp_activity_logger_render_stat_card(__('Latest activity', 'dk-user-activity-logger'), (string) $metrics['latestActivity'], 'latest-activity');
     echo '</section>';
 
     echo '<section class="wp-activity-logger-panel">';
     echo '<form method="get" action="' . esc_url($page_url) . '" class="wp-activity-logger-filters" data-filter-form>';
     echo '<div class="wp-activity-logger-field">';
-    echo '<label for="wpal-start-date">' . esc_html__('From', 'wp-logs') . '</label>';
+    echo '<label for="wpal-start-date">' . esc_html__('From', 'dk-user-activity-logger') . '</label>';
     echo '<input id="wpal-start-date" type="date" name="start_date" value="' . esc_attr($filters['start_date']) . '">';
     echo '</div>';
     echo '<div class="wp-activity-logger-field">';
-    echo '<label for="wpal-end-date">' . esc_html__('To', 'wp-logs') . '</label>';
+    echo '<label for="wpal-end-date">' . esc_html__('To', 'dk-user-activity-logger') . '</label>';
     echo '<input id="wpal-end-date" type="date" name="end_date" value="' . esc_attr($filters['end_date']) . '">';
     echo '</div>';
     echo '<div class="wp-activity-logger-field">';
-    echo '<label for="wpal-username">' . esc_html__('Username', 'wp-logs') . '</label>';
-    echo '<input id="wpal-username" type="text" name="username" value="' . esc_attr($filters['username']) . '" placeholder="' . esc_attr__('Filter by username', 'wp-logs') . '">';
+    echo '<label for="wpal-username">' . esc_html__('Username', 'dk-user-activity-logger') . '</label>';
+    echo '<input id="wpal-username" type="text" name="username" value="' . esc_attr($filters['username']) . '" placeholder="' . esc_attr__('Filter by username', 'dk-user-activity-logger') . '">';
     echo '</div>';
     echo '<div class="wp-activity-logger-field wp-activity-logger-field-wide">';
-    echo '<label for="wpal-search">' . esc_html__('Search', 'wp-logs') . '</label>';
-    echo '<input id="wpal-search" type="text" name="search" value="' . esc_attr($filters['search']) . '" placeholder="' . esc_attr__('Search activity text or IP address', 'wp-logs') . '">';
+    echo '<label for="wpal-search">' . esc_html__('Search', 'dk-user-activity-logger') . '</label>';
+    echo '<input id="wpal-search" type="text" name="search" value="' . esc_attr($filters['search']) . '" placeholder="' . esc_attr__('Search activity text or IP address', 'dk-user-activity-logger') . '">';
     echo '</div>';
     echo '<div class="wp-activity-logger-field">';
-    echo '<label for="wpal-ip-address">' . esc_html__('IP address', 'wp-logs') . '</label>';
-    echo '<input id="wpal-ip-address" type="text" name="ip_address" value="' . esc_attr($filters['ip_address']) . '" placeholder="' . esc_attr__('Contains...', 'wp-logs') . '">';
+    echo '<label for="wpal-ip-address">' . esc_html__('IP address', 'dk-user-activity-logger') . '</label>';
+    echo '<input id="wpal-ip-address" type="text" name="ip_address" value="' . esc_attr($filters['ip_address']) . '" placeholder="' . esc_attr__('Contains...', 'dk-user-activity-logger') . '">';
     echo '</div>';
     echo '<div class="wp-activity-logger-field">';
-    echo '<label for="wpal-order-by">' . esc_html__('Sort by', 'wp-logs') . '</label>';
+    echo '<label for="wpal-order-by">' . esc_html__('Sort by', 'dk-user-activity-logger') . '</label>';
     echo '<select id="wpal-order-by" name="order_by">';
-    wp_activity_logger_render_select_option('created_at', $filters['order_by'], __('Newest activity', 'wp-logs'));
-    wp_activity_logger_render_select_option('id', $filters['order_by'], __('Log ID', 'wp-logs'));
-    wp_activity_logger_render_select_option('user', $filters['order_by'], __('Username', 'wp-logs'));
-    wp_activity_logger_render_select_option('activity', $filters['order_by'], __('Activity text', 'wp-logs'));
-    wp_activity_logger_render_select_option('ip_address', $filters['order_by'], __('IP address', 'wp-logs'));
+    wp_activity_logger_render_select_option('created_at', $filters['order_by'], __('Newest activity', 'dk-user-activity-logger'));
+    wp_activity_logger_render_select_option('id', $filters['order_by'], __('Log ID', 'dk-user-activity-logger'));
+    wp_activity_logger_render_select_option('user', $filters['order_by'], __('Username', 'dk-user-activity-logger'));
+    wp_activity_logger_render_select_option('activity', $filters['order_by'], __('Activity text', 'dk-user-activity-logger'));
+    wp_activity_logger_render_select_option('ip_address', $filters['order_by'], __('IP address', 'dk-user-activity-logger'));
     echo '</select>';
     echo '</div>';
     echo '<div class="wp-activity-logger-field">';
-    echo '<label for="wpal-order">' . esc_html__('Direction', 'wp-logs') . '</label>';
+    echo '<label for="wpal-order">' . esc_html__('Direction', 'dk-user-activity-logger') . '</label>';
     echo '<select id="wpal-order" name="order">';
-    wp_activity_logger_render_select_option('DESC', $filters['order'], __('Descending', 'wp-logs'));
-    wp_activity_logger_render_select_option('ASC', $filters['order'], __('Ascending', 'wp-logs'));
+    wp_activity_logger_render_select_option('DESC', $filters['order'], __('Descending', 'dk-user-activity-logger'));
+    wp_activity_logger_render_select_option('ASC', $filters['order'], __('Ascending', 'dk-user-activity-logger'));
     echo '</select>';
     echo '</div>';
     echo '<div class="wp-activity-logger-field">';
-    echo '<label for="wpal-refresh-interval">' . esc_html__('Auto refresh', 'wp-logs') . '</label>';
+    echo '<label for="wpal-refresh-interval">' . esc_html__('Auto refresh', 'dk-user-activity-logger') . '</label>';
     echo '<select id="wpal-refresh-interval" name="refresh_interval" data-refresh-interval>';
-    echo '<option value="0">' . esc_html__('Off', 'wp-logs') . '</option>';
-    echo '<option value="15">' . esc_html__('Every 15s', 'wp-logs') . '</option>';
-    echo '<option value="30" selected>' . esc_html__('Every 30s', 'wp-logs') . '</option>';
-    echo '<option value="60">' . esc_html__('Every 60s', 'wp-logs') . '</option>';
+    echo '<option value="0">' . esc_html__('Off', 'dk-user-activity-logger') . '</option>';
+    echo '<option value="15">' . esc_html__('Every 15s', 'dk-user-activity-logger') . '</option>';
+    echo '<option value="30" selected>' . esc_html__('Every 30s', 'dk-user-activity-logger') . '</option>';
+    echo '<option value="60">' . esc_html__('Every 60s', 'dk-user-activity-logger') . '</option>';
     echo '</select>';
     echo '</div>';
     echo '<div class="wp-activity-logger-filter-actions">';
-    echo '<button type="submit" class="button button-primary">' . esc_html__('Apply filters', 'wp-logs') . '</button>';
-    echo '<a class="button button-secondary" href="' . esc_url($page_url) . '">' . esc_html__('Clear filters', 'wp-logs') . '</a>';
+    echo '<button type="submit" class="button button-primary">' . esc_html__('Apply filters', 'dk-user-activity-logger') . '</button>';
+    echo '<a class="button button-secondary" href="' . esc_url($page_url) . '">' . esc_html__('Clear filters', 'dk-user-activity-logger') . '</a>';
     echo '</div>';
     echo '</form>';
 
     echo '<div class="wp-activity-logger-meta-bar">';
-    echo '<div class="wp-activity-logger-status"><span class="wp-activity-logger-status-dot"></span><span data-refresh-status>' . esc_html__('Live refresh ready', 'wp-logs') . '</span></div>';
+    echo '<div class="wp-activity-logger-status"><span class="wp-activity-logger-status-dot"></span><span data-refresh-status>' . esc_html__('Live refresh ready', 'dk-user-activity-logger') . '</span></div>';
     echo '<div class="wp-activity-logger-meta-right">';
-    echo '<span data-last-updated>' . esc_html__('Waiting for the next refresh...', 'wp-logs') . '</span>';
+    echo '<span data-last-updated>' . esc_html__('Waiting for the next refresh...', 'dk-user-activity-logger') . '</span>';
     echo '<span class="wp-activity-logger-page-count" data-page-count>';
     echo esc_html(
         sprintf(
             /* translators: 1: current page number, 2: total page count */
-            __('Page %1$d of %2$d', 'wp-logs'),
+            __('Page %1$d of %2$d', 'dk-user-activity-logger'),
             $pagination['currentPage'],
             $pagination['totalPages']
         )
@@ -205,13 +205,13 @@ function wp_activity_logger_render_dashboard(
     echo '<div class="wp-activity-logger-table-wrap">';
     echo '<table class="wp-activity-logger-table widefat striped">';
     echo '<thead><tr>';
-    echo '<th>' . esc_html__('ID', 'wp-logs') . '</th>';
-    echo '<th>' . esc_html__('User', 'wp-logs') . '</th>';
-    echo '<th>' . esc_html__('Activity', 'wp-logs') . '</th>';
-    echo '<th>' . esc_html__('IP address', 'wp-logs') . '</th>';
+    echo '<th>' . esc_html__('ID', 'dk-user-activity-logger') . '</th>';
+    echo '<th>' . esc_html__('User', 'dk-user-activity-logger') . '</th>';
+    echo '<th>' . esc_html__('Activity', 'dk-user-activity-logger') . '</th>';
+    echo '<th>' . esc_html__('IP address', 'dk-user-activity-logger') . '</th>';
     echo '<th>' . esc_html(sprintf(
         /* translators: %s: timezone identifier */
-        __('Timestamp (%s)', 'wp-logs'),
+        __('Timestamp (%s)', 'dk-user-activity-logger'),
         wp_activity_logger_timezone_name()
     )) . '</th>';
     echo '</tr></thead>';
@@ -222,7 +222,7 @@ function wp_activity_logger_render_dashboard(
     }
 
     if ($payload['items'] === []) {
-        echo '<tr data-empty-state><td colspan="5">' . esc_html__('No matching logs found.', 'wp-logs') . '</td></tr>';
+        echo '<tr data-empty-state><td colspan="5">' . esc_html__('No matching logs found.', 'dk-user-activity-logger') . '</td></tr>';
     }
 
     echo '</tbody>';
@@ -230,17 +230,17 @@ function wp_activity_logger_render_dashboard(
     echo '</div>';
 
     echo '<div class="wp-activity-logger-pagination">';
-    echo '<button type="button" class="button" data-page-direction="prev">' . esc_html__('Previous', 'wp-logs') . '</button>';
+    echo '<button type="button" class="button" data-page-direction="prev">' . esc_html__('Previous', 'dk-user-activity-logger') . '</button>';
     echo '<span class="wp-activity-logger-pagination-summary" data-pagination-summary>';
     echo esc_html(
         sprintf(
             /* translators: %1$d: total number of logs */
-            __('Showing %1$d logs', 'wp-logs'),
+            __('Showing %1$d logs', 'dk-user-activity-logger'),
             $pagination['totalLogs']
         )
     );
     echo '</span>';
-    echo '<button type="button" class="button" data-page-direction="next">' . esc_html__('Next', 'wp-logs') . '</button>';
+    echo '<button type="button" class="button" data-page-direction="next">' . esc_html__('Next', 'dk-user-activity-logger') . '</button>';
     echo '</div>';
     echo '</section>';
 
@@ -252,22 +252,22 @@ function wp_activity_logger_render_security_panel(string $page_url, string $secu
 {
     echo '<section class="wp-activity-logger-security-card">';
     echo '<div class="wp-activity-logger-security-copy">';
-    echo '<p class="wp-activity-logger-eyebrow">' . esc_html__('Protection', 'wp-logs') . '</p>';
-    echo '<h3>' . esc_html__('Hidden screen access', 'wp-logs') . '</h3>';
-    echo '<p>' . esc_html__('Only the plugin owner account can open this screen. You can add a second password here when you want an extra lock before the logs are shown.', 'wp-logs') . '</p>';
-    echo '<p><strong>' . esc_html__('Private URL:', 'wp-logs') . '</strong> <a href="' . esc_url($page_url) . '">' . esc_html($page_url) . '</a></p>';
+    echo '<p class="wp-activity-logger-eyebrow">' . esc_html__('Protection', 'dk-user-activity-logger') . '</p>';
+    echo '<h3>' . esc_html__('Hidden screen access', 'dk-user-activity-logger') . '</h3>';
+    echo '<p>' . esc_html__('Only the plugin owner account can open this screen. You can add a second password here when you want an extra lock before the logs are shown.', 'dk-user-activity-logger') . '</p>';
+    echo '<p><strong>' . esc_html__('Private URL:', 'dk-user-activity-logger') . '</strong> <a href="' . esc_url($page_url) . '">' . esc_html($page_url) . '</a></p>';
 
     if ($security_saved === 'updated') {
-        echo '<div class="notice notice-success inline"><p>' . esc_html__('The access password was updated.', 'wp-logs') . '</p></div>';
+        echo '<div class="notice notice-success inline"><p>' . esc_html__('The access password was updated.', 'dk-user-activity-logger') . '</p></div>';
     } elseif ($security_saved === 'removed') {
-        echo '<div class="notice notice-success inline"><p>' . esc_html__('The access password was removed. Hidden owner-only access is still active.', 'wp-logs') . '</p></div>';
+        echo '<div class="notice notice-success inline"><p>' . esc_html__('The access password was removed. Hidden owner-only access is still active.', 'dk-user-activity-logger') . '</p></div>';
     } elseif ($security_error === 'mismatch') {
-        echo '<div class="notice notice-error inline"><p>' . esc_html__('Password and confirmation must match.', 'wp-logs') . '</p></div>';
+        echo '<div class="notice notice-error inline"><p>' . esc_html__('Password and confirmation must match.', 'dk-user-activity-logger') . '</p></div>';
     }
 
     $password_status = wp_activity_logger()->has_saved_password()
-        ? __('Saved password active', 'wp-logs')
-        : __('No saved password yet', 'wp-logs');
+        ? __('Saved password active', 'dk-user-activity-logger')
+        : __('No saved password yet', 'dk-user-activity-logger');
 
     echo '<p class="wp-activity-logger-password-status">' . esc_html($password_status) . '</p>';
     echo '</div>';
@@ -275,13 +275,13 @@ function wp_activity_logger_render_security_panel(string $page_url, string $secu
     echo '<form method="post" action="' . esc_url($page_url) . '" class="wp-activity-logger-security-form">';
     wp_nonce_field('wp_activity_logger_save_security');
     echo '<input type="hidden" name="wp_activity_logger_save_security" value="1">';
-    echo '<label for="wpal-new-password">' . esc_html__('New access password', 'wp-logs') . '</label>';
+    echo '<label for="wpal-new-password">' . esc_html__('New access password', 'dk-user-activity-logger') . '</label>';
     echo '<input id="wpal-new-password" type="password" name="wp_activity_logger_new_password" class="regular-text" autocomplete="new-password">';
-    echo '<label for="wpal-confirm-password">' . esc_html__('Confirm password', 'wp-logs') . '</label>';
+    echo '<label for="wpal-confirm-password">' . esc_html__('Confirm password', 'dk-user-activity-logger') . '</label>';
     echo '<input id="wpal-confirm-password" type="password" name="wp_activity_logger_confirm_password" class="regular-text" autocomplete="new-password">';
     echo '<div class="wp-activity-logger-security-actions">';
-    echo '<button type="submit" class="button button-primary">' . esc_html__('Save password', 'wp-logs') . '</button>';
-    echo '<button type="submit" class="button button-secondary" name="wp_activity_logger_remove_password" value="1">' . esc_html__('Remove password', 'wp-logs') . '</button>';
+    echo '<button type="submit" class="button button-primary">' . esc_html__('Save password', 'dk-user-activity-logger') . '</button>';
+    echo '<button type="submit" class="button button-secondary" name="wp_activity_logger_remove_password" value="1">' . esc_html__('Remove password', 'dk-user-activity-logger') . '</button>';
     echo '</div>';
     echo '</form>';
     echo '</section>';
@@ -293,15 +293,15 @@ function wp_activity_logger_render_timezone_panel(string $page_url, string $time
 
     echo '<section class="wp-activity-logger-security-card">';
     echo '<div class="wp-activity-logger-security-copy">';
-    echo '<p class="wp-activity-logger-eyebrow">' . esc_html__('Timezone', 'wp-logs') . '</p>';
-    echo '<h3>' . esc_html__('Viewer and schedule timezone', 'wp-logs') . '</h3>';
-    echo '<p>' . esc_html__('Choose which timezone the log timestamps, date filters, and nightly maintenance schedule should use. The default is America/Edmonton.', 'wp-logs') . '</p>';
-    echo '<p><strong>' . esc_html__('Current timezone:', 'wp-logs') . '</strong> ' . esc_html($timezone_name) . '</p>';
+    echo '<p class="wp-activity-logger-eyebrow">' . esc_html__('Timezone', 'dk-user-activity-logger') . '</p>';
+    echo '<h3>' . esc_html__('Viewer and schedule timezone', 'dk-user-activity-logger') . '</h3>';
+    echo '<p>' . esc_html__('Choose which timezone the log timestamps, date filters, and nightly maintenance schedule should use. The default is America/Edmonton.', 'dk-user-activity-logger') . '</p>';
+    echo '<p><strong>' . esc_html__('Current timezone:', 'dk-user-activity-logger') . '</strong> ' . esc_html($timezone_name) . '</p>';
 
     if ($timezone_saved === 'updated') {
-        echo '<div class="notice notice-success inline"><p>' . esc_html__('Timezone settings were updated.', 'wp-logs') . '</p></div>';
+        echo '<div class="notice notice-success inline"><p>' . esc_html__('Timezone settings were updated.', 'dk-user-activity-logger') . '</p></div>';
     } elseif ($timezone_error === 'invalid') {
-        echo '<div class="notice notice-error inline"><p>' . esc_html__('Please choose a valid timezone.', 'wp-logs') . '</p></div>';
+        echo '<div class="notice notice-error inline"><p>' . esc_html__('Please choose a valid timezone.', 'dk-user-activity-logger') . '</p></div>';
     }
 
     echo '</div>';
@@ -309,7 +309,7 @@ function wp_activity_logger_render_timezone_panel(string $page_url, string $time
     echo '<form method="post" action="' . esc_url($page_url) . '" class="wp-activity-logger-security-form">';
     wp_nonce_field('wp_activity_logger_save_timezone');
     echo '<input type="hidden" name="wp_activity_logger_save_timezone" value="1">';
-    echo '<label for="wpal-timezone">' . esc_html__('Timezone', 'wp-logs') . '</label>';
+    echo '<label for="wpal-timezone">' . esc_html__('Timezone', 'dk-user-activity-logger') . '</label>';
     echo '<select id="wpal-timezone" name="wp_activity_logger_timezone" class="regular-text">';
 
     foreach (timezone_identifiers_list() as $identifier) {
@@ -318,7 +318,7 @@ function wp_activity_logger_render_timezone_panel(string $page_url, string $time
 
     echo '</select>';
     echo '<div class="wp-activity-logger-security-actions">';
-    echo '<button type="submit" class="button button-primary">' . esc_html__('Save timezone', 'wp-logs') . '</button>';
+    echo '<button type="submit" class="button button-primary">' . esc_html__('Save timezone', 'dk-user-activity-logger') . '</button>';
     echo '</div>';
     echo '</form>';
     echo '</section>';
