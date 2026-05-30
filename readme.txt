@@ -1,4 +1,4 @@
-=== Activity Logger for Site Owners ===
+=== DK User Activity Logger ===
 Contributors: dmytrokovalenko
 Tags: activity log, audit log, security, logging, monitoring
 Requires at least: 6.0
@@ -12,7 +12,7 @@ Records important WordPress activity and provides an owner-only log viewer for m
 
 == Description ==
 
-Activity Logger for Site Owners helps site owners keep an audit trail of important administrative activity without exposing the log screen in the normal WordPress menu.
+DK User Activity Logger helps site owners keep an audit trail of important administrative activity in a dedicated owner-only log viewer.
 
 Features include:
 
@@ -30,7 +30,7 @@ The plugin does not require an external account or third-party service to functi
 == Installation ==
 
 1. Upload the plugin folder to `/wp-content/plugins/`, or install it through the WordPress Plugins screen.
-2. Activate **Activity Logger for Site Owners**.
+2. Activate **DK User Activity Logger**.
 3. After activation, open **Tools > Activity Logs**.
 4. Optionally set an extra access password inside the log viewer.
 
@@ -38,7 +38,7 @@ The plugin does not require an external account or third-party service to functi
 
 = Who can access the log viewer? =
 
-Only the owner account stored by the plugin can open the hidden viewer screen.
+Only the owner account stored by the plugin can open the log viewer screen.
 
 = Is the viewer visible in the admin menu? =
 
@@ -58,7 +58,7 @@ Yes. The plugin defaults to `America/Edmonton`, but the owner can choose a diffe
 
 == Screenshots ==
 
-1. Hidden owner-only activity log viewer with filters, metrics, and live refresh.
+1. Owner-only activity log viewer with filters, metrics, and live refresh.
 2. Security panel for protecting the hidden viewer with an extra password.
 
 == Changelog ==

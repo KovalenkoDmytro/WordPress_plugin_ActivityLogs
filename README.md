@@ -1,6 +1,6 @@
-# Activity Logger for Site Owners
+# DK User Activity Logger
 
-Activity Logger for Site Owners records important WordPress activity and provides a dedicated log viewer for the site owner. It is designed for situations where you need a clear audit trail of client actions.
+DK User Activity Logger records important WordPress activity and provides a dedicated log viewer for the site owner. It is designed for situations where you need a clear audit trail of client actions.
 
 ## Features
 
@@ -30,6 +30,9 @@ wp-logs/
 │   └── admin.js
 ├── includes/
 │   ├── admin_show_page.php
+│   ├── class-wp-activity-logger-admin-service.php
+│   ├── class-wp-activity-logger-event-logger.php
+│   ├── class-wp-activity-logger-plugin.php
 │   └── data_base_queries.php
 ├── languages/
 │   └── index.php
@@ -109,6 +112,9 @@ The plugin currently logs:
 ## Development Notes
 
 - Main bootstrap: [activity-logger-site-owners.php](/Users/dmytrokovalenko/Documents/Projects/WordpressStarter/app/plugins/wp-logs/activity-logger-site-owners.php)
+- Plugin orchestration: [includes/class-wp-activity-logger-plugin.php](/Users/dmytrokovalenko/Documents/Projects/WordpressStarter/app/plugins/wp-logs/includes/class-wp-activity-logger-plugin.php)
+- Admin and access flow: [includes/class-wp-activity-logger-admin-service.php](/Users/dmytrokovalenko/Documents/Projects/WordpressStarter/app/plugins/wp-logs/includes/class-wp-activity-logger-admin-service.php)
+- Event logging: [includes/class-wp-activity-logger-event-logger.php](/Users/dmytrokovalenko/Documents/Projects/WordpressStarter/app/plugins/wp-logs/includes/class-wp-activity-logger-event-logger.php)
 - Admin UI: [includes/admin_show_page.php](/Users/dmytrokovalenko/Documents/Projects/WordpressStarter/app/plugins/wp-logs/includes/admin_show_page.php)
 - Database layer: [includes/data_base_queries.php](/Users/dmytrokovalenko/Documents/Projects/WordpressStarter/app/plugins/wp-logs/includes/data_base_queries.php)
 - WordPress.org readme: [readme.txt](/Users/dmytrokovalenko/Documents/Projects/WordpressStarter/app/plugins/wp-logs/readme.txt)

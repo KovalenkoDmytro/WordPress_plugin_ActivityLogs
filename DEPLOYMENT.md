@@ -21,6 +21,10 @@ This creates:
 
 ```text
 wordpress-org-build/
+  assets/
+    banner-772x250.png
+    icon-128x128.png
+    icon-256x256.png
   trunk/
     assets/
     includes/
@@ -49,4 +53,6 @@ your-plugin-slug/
     2.6.1/
 ```
 
-Copy the contents of `wordpress-org-build/trunk` into your SVN `trunk/`, then tag the same release as `tags/2.6.1/`.
+Copy the contents of `wordpress-org-build/trunk` into your SVN `trunk/`.
+Copy the contents of `wordpress-org-build/assets` into the SVN root `assets/`.
+Then tag the same release as `tags/2.6.1/`.
