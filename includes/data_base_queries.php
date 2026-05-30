@@ -272,9 +272,30 @@ function wp_activity_logger_delete_expired_logs(int $retention_days): void
     );
 }
 
+function wp_activity_logger_default_timezone_name(): string
+{
+    return 'America/Edmonton';
+}
+
+function wp_activity_logger_is_valid_timezone(string $timezone_name): bool
+{
+    return in_array($timezone_name, timezone_identifiers_list(), true);
+}
+
+function wp_activity_logger_timezone_name(): string
+{
+    $timezone_name = (string) get_option('wp_activity_logger_timezone', '');
+
+    if (wp_activity_logger_is_valid_timezone($timezone_name)) {
+        return $timezone_name;
+    }
+
+    return wp_activity_logger_default_timezone_name();
+}
+
 function wp_activity_logger_timezone(): DateTimeZone
 {
-    return new DateTimeZone('America/Edmonton');
+    return new DateTimeZone(wp_activity_logger_timezone_name());
 }
 
 function wp_activity_logger_get_utc_date_boundary(string $date, bool $end_of_day): ?string

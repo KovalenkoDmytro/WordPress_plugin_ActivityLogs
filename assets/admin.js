@@ -34,6 +34,9 @@
     isLoading: false,
   };
 
+  const formatBrowserTimestamp = () =>
+    new Date().toLocaleString(undefined, config.timezone ? { timeZone: config.timezone } : undefined);
+
   const syncPaginationButtons = (isLoading = state.isLoading) => {
     prevButton.disabled = isLoading || state.currentPage <= 1;
     nextButton.disabled = isLoading || state.currentPage >= state.totalPages;
@@ -121,7 +124,7 @@
     state.currentPage = payload.pagination.currentPage;
     state.totalPages = payload.pagination.totalPages;
     state.topLogId = payload.items[0]?.id ?? state.topLogId;
-    lastUpdated.textContent = new Date().toLocaleString();
+    lastUpdated.textContent = formatBrowserTimestamp();
     syncPaginationButtons(false);
     refreshStatus.textContent = config.strings.updated;
   };

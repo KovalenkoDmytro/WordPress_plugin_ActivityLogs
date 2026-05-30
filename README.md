@@ -13,8 +13,8 @@ WP Activity Logger records important WordPress activity and provides a private l
   - filtering by date, username, search text, and IP address
   - sorting and pagination
   - optional password protection
-- Automatically checks for plugin updates every night from a private server.
-- Automatically installs a newer plugin package when an update is available.
+  - configurable timezone with `America/Edmonton` as the default
+- Runs nightly maintenance to clean up expired log rows.
 
 ## Requirements
 
@@ -31,8 +31,9 @@ wp-logs/
 ├── includes/
 │   ├── admin_show_page.php
 │   └── data_base_queries.php
-├── plugin-update-checker-master/
-├── wp-logs-viewer-plugin.json
+├── languages/
+│   └── index.php
+├── readme.txt
 └── wp-logs-viewer.php
 ```
 
@@ -44,7 +45,7 @@ wp-logs/
    - creates the activity log table
    - assigns the current admin user as the plugin owner
    - generates a private access slug for the log screen
-   - schedules the nightly update check
+   - schedules the nightly maintenance task
 
 ## Accessing the Log Viewer
 
@@ -75,68 +76,14 @@ define('WP_ACTIVITY_LOGGER_ACCESS_PASSWORD', 'your-strong-password');
 
 If this constant is present, it takes precedence over the password saved in the UI.
 
-## Nightly Automatic Updates
-
-This plugin uses the bundled `plugin-update-checker` library, but update metadata comes from a private server instead of GitHub.
-
-### Update Flow
+## Nightly Maintenance
 
 Every night at `02:00` in the WordPress site timezone, the plugin:
 
-1. Requests plugin metadata from:
+1. Deletes log rows older than the configured retention period.
+2. Relies on WordPress cron to schedule the cleanup.
 
-```text
-https://wp-plugins.dmytro-kovalenko.ca/WordPress_plugin_ActivityLogs/wp-logs-viewer-plugin.json
-```
-
-2. Checks whether the remote version is newer than the installed version.
-3. If a newer version exists, WordPress downloads the package from:
-
-```text
-https://wp-plugins.dmytro-kovalenko.ca/wp-logs.zip
-```
-
-4. Runs an automatic plugin upgrade.
-
-### Important Notes
-
-- The metadata JSON must always contain the correct `version` and `download_url`.
-- The ZIP package should unpack into the correct plugin directory structure.
-- WordPress cron must run reliably on the site. If WP-Cron is disabled, a real server cron should trigger WordPress regularly.
-
-## Metadata File Format
-
-The private update server should host a JSON file like this:
-
-```json
-{
-  "name": "WP Activity Logger",
-  "version": "2.6",
-  "download_url": "https://wp-plugins.dmytro-kovalenko.ca/wp-logs.zip",
-  "homepage": "https://wp-plugins.dmytro-kovalenko.ca/",
-  "details_url": "https://wp-plugins.dmytro-kovalenko.ca/",
-  "requires": "6.0",
-  "requires_php": "8.1",
-  "tested": "6.6",
-  "last_updated": "2026-05-19 09:20:00",
-  "upgrade_notice": "Shows system-triggered actions clearly instead of Unknown user and preserves better actor labels in the log viewer.",
-  "author": "Dmytro Kovalenko",
-  "author_homepage": "https://dmytro-kovalenko.com/",
-  "sections": {
-    "description": "Protected WordPress activity logger with a hidden owner-only audit screen, a subtle Logs link on the Plugins screen, Edmonton-based timestamps, clearer system and deleted-user labels in the viewer, more reliable login, logout, and post update logging, nightly private-server updates, and automatic cleanup of logs older than 30 days.",
-    "installation": "",
-    "changelog": "",
-    "custom_section": ""
-  },
-  "icons": {},
-  "banners": {},
-  "translations": [],
-  "rating": 0,
-  "num_ratings": 0,
-  "downloaded": 0,
-  "active_installs": 0
-}
-```
+If WP-Cron is disabled, a real server cron should trigger WordPress regularly.
 
 ## Logged Events
 
@@ -155,16 +102,17 @@ The plugin currently logs:
 ## Time Zone
 
 - Log entries are stored in UTC for consistency.
-- The log viewer displays timestamps in `America/Edmonton`.
-- Date filters are interpreted in `America/Edmonton`, so filtering matches what you see on screen.
-- The nightly maintenance and update check runs at `02:00` in `America/Edmonton`.
+- The plugin uses `America/Edmonton` by default.
+- The owner can choose a different timezone in the hidden viewer settings.
+- The selected timezone controls displayed timestamps, date filters, and the nightly maintenance schedule.
 
 ## Development Notes
 
 - Main bootstrap: [wp-logs-viewer.php](/Users/dmytrokovalenko/Documents/Projects/WordpressStarter/app/plugins/wp-logs/wp-logs-viewer.php)
 - Admin UI: [includes/admin_show_page.php](/Users/dmytrokovalenko/Documents/Projects/WordpressStarter/app/plugins/wp-logs/includes/admin_show_page.php)
 - Database layer: [includes/data_base_queries.php](/Users/dmytrokovalenko/Documents/Projects/WordpressStarter/app/plugins/wp-logs/includes/data_base_queries.php)
-- Update metadata: [wp-logs-viewer-plugin.json](/Users/dmytrokovalenko/Documents/Projects/WordpressStarter/app/plugins/wp-logs/wp-logs-viewer-plugin.json)
+- WordPress.org readme: [readme.txt](/Users/dmytrokovalenko/Documents/Projects/WordpressStarter/app/plugins/wp-logs/readme.txt)
+- Deployment notes: [DEPLOYMENT.md](/Users/dmytrokovalenko/Documents/Projects/WordpressStarter/app/plugins/wp-logs/DEPLOYMENT.md)
 
 ## Security Notes
 

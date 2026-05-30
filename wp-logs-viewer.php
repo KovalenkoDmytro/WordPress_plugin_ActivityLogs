@@ -3,18 +3,18 @@
  * Plugin Name: WP Activity Logger
  * Plugin URI: https://github.com/KovalenkoDmytro/wp_logs_plugin
  * Description: Records key site activity and provides a protected activity log screen for site owners.
- * Version: 2.6
+ * Version: 2.6.1
  * Author: Dmytro Kovalenko
  * Author URI: https://dmytro-kovalenko.ca
- * License: GPL2
+ * License: GPL v2 or later
+ * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  * Requires at least: 6.0
  * Requires PHP: 8.1
- * Update URI: https://wp-plugins.dmytro-kovalenko.ca/
+ * Text Domain: wp-activity-logger
+ * Domain Path: /languages
  */
 
 declare(strict_types=1);
-
-use YahnisElsts\PluginUpdateChecker\v5\PucFactory;
 
 if (! defined('ABSPATH')) {
     exit;
@@ -33,41 +33,38 @@ if (version_compare(PHP_VERSION, '8.1', '<')) {
     return;
 }
 
-require_once __DIR__ . '/plugin-update-checker-master/plugin-update-checker.php';
-
 final class WPActivityLogger
 {
-    public const VERSION = '2.6';
+    public const VERSION = '2.6.1';
     public const VIEW_CAPABILITY = 'manage_options';
-    public const NIGHTLY_UPDATE_HOOK = 'wp_activity_logger_nightly_update';
+    public const NIGHTLY_MAINTENANCE_HOOK = 'wp_activity_logger_nightly_maintenance';
     public const LOG_RETENTION_DAYS = 30;
     public const OPTION_ACCESS_SLUG = 'wp_activity_logger_access_slug';
     public const OPTION_OWNER_USER_ID = 'wp_activity_logger_owner_user_id';
     public const OPTION_SHOW_ACCESS_NOTICE = 'wp_activity_logger_show_access_notice';
     public const OPTION_ACCESS_PASSWORD_HASH = 'wp_activity_logger_access_password_hash';
+    public const OPTION_TIMEZONE = 'wp_activity_logger_timezone';
     public const USER_META_UNLOCKED_UNTIL = 'wp_activity_logger_unlocked_until';
     public const ACCESS_PASSWORD_CONST = 'WP_ACTIVITY_LOGGER_ACCESS_PASSWORD';
-
-    private \YahnisElsts\PluginUpdateChecker\v5p5\Plugin\UpdateChecker $update_checker;
 
     public function __construct()
     {
         register_activation_hook(__FILE__, [$this, 'install']);
         register_deactivation_hook(__FILE__, [$this, 'deactivate']);
 
-        $this->update_checker = $this->configure_updates();
-
         add_action('admin_init', [$this, 'ensure_owner_is_set']);
         add_action('admin_init', [$this, 'maybe_dismiss_access_notice']);
         add_action('admin_init', [$this, 'maybe_unlock_screen']);
         add_action('admin_init', [$this, 'maybe_save_security_settings']);
+        add_action('admin_init', [$this, 'maybe_save_timezone_settings']);
+        add_action('init', [$this, 'load_textdomain']);
         add_action('init', [$this, 'schedule_nightly_update']);
         add_action('admin_menu', [$this, 'register_admin_page']);
         add_action('admin_enqueue_scripts', [$this, 'enqueue_admin_assets']);
         add_action('admin_bar_menu', [$this, 'register_admin_bar_link'], 90);
         add_action('admin_notices', [$this, 'render_access_notice']);
         add_action('wp_ajax_wp_activity_logger_fetch_logs', [$this, 'handle_fetch_logs']);
-        add_action(self::NIGHTLY_UPDATE_HOOK, [$this, 'run_nightly_update']);
+        add_action(self::NIGHTLY_MAINTENANCE_HOOK, [$this, 'run_nightly_maintenance']);
 
         add_filter('all_plugins', [$this, 'hide_plugin_from_non_owner']);
         add_filter('plugin_row_meta', [$this, 'add_plugin_row_meta_link'], 10, 4);
@@ -86,19 +83,17 @@ final class WPActivityLogger
 
     public function deactivate(): void
     {
-        wp_clear_scheduled_hook(self::NIGHTLY_UPDATE_HOOK);
+        wp_clear_scheduled_hook(self::NIGHTLY_MAINTENANCE_HOOK);
+        wp_clear_scheduled_hook('wp_activity_logger_nightly_update');
     }
 
-    public function configure_updates(): \YahnisElsts\PluginUpdateChecker\v5p5\Plugin\UpdateChecker
+    public function load_textdomain(): void
     {
-        $update_checker = PucFactory::buildUpdateChecker(
-            $this->get_update_metadata_url(),
-            __FILE__,
-            'wp-logs',
-            0
+        load_plugin_textdomain(
+            'wp-activity-logger',
+            false,
+            dirname(plugin_basename(__FILE__)) . '/languages'
         );
-
-        return $update_checker;
     }
 
     public function ensure_owner_is_set(): void
@@ -208,6 +203,7 @@ final class WPActivityLogger
                 'defaultRefreshSeconds' => 30,
                 'pageUrl' => $this->get_admin_page_url(),
                 'siteDateFormat' => trim(get_option('date_format') . ' ' . get_option('time_format')),
+                'timezone' => $this->get_timezone_name(),
                 'strings' => [
                     'loading' => __('Refreshing logs...', 'wp-activity-logger'),
                     'ready' => __('Live refresh ready', 'wp-activity-logger'),
@@ -345,42 +341,27 @@ final class WPActivityLogger
         return $this->get_saved_password_hash() !== '';
     }
 
+    public function get_timezone_name(): string
+    {
+        return wp_activity_logger_timezone_name();
+    }
+
     public function schedule_nightly_update(): void
     {
-        if (wp_next_scheduled(self::NIGHTLY_UPDATE_HOOK) !== false) {
+        if (wp_next_scheduled(self::NIGHTLY_MAINTENANCE_HOOK) !== false) {
             return;
         }
 
-        wp_schedule_event($this->get_next_nightly_timestamp(), 'daily', self::NIGHTLY_UPDATE_HOOK);
+        wp_schedule_event($this->get_next_nightly_timestamp(), 'daily', self::NIGHTLY_MAINTENANCE_HOOK);
     }
 
-    public function run_nightly_update(): void
+    public function run_nightly_maintenance(): void
     {
         if (wp_installing()) {
             return;
         }
 
         wp_activity_logger_delete_expired_logs($this->get_log_retention_days());
-
-        $update = $this->update_checker->checkForUpdates();
-        if ($update === null) {
-            return;
-        }
-
-        $transient = get_site_transient('update_plugins');
-        $transient = $this->update_checker->injectUpdate($transient);
-        set_site_transient('update_plugins', $transient);
-
-        if (! isset($transient->response[plugin_basename(__FILE__)])) {
-            return;
-        }
-
-        require_once ABSPATH . 'wp-admin/includes/file.php';
-        require_once ABSPATH . 'wp-admin/includes/misc.php';
-        require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
-
-        $upgrader = new \Plugin_Upgrader(new \Automatic_Upgrader_Skin());
-        $upgrader->upgrade(plugin_basename(__FILE__));
     }
 
     private function register_logging_hooks(): void
@@ -747,18 +728,9 @@ final class WPActivityLogger
         return (string) apply_filters('wp_activity_logger_access_password', $password);
     }
 
-    private function get_update_metadata_url(): string
-    {
-        return (string) apply_filters(
-            'wp_activity_logger_update_metadata_url',
-            'https://wp-plugins.dmytro-kovalenko.ca/WordPress_plugin_ActivityLogs/wp-logs-viewer-plugin.json'
-        );
-    }
-
     private function get_next_nightly_timestamp(): int
     {
-        $timezone = new \DateTimeZone('America/Edmonton');
-        $next_run = new \DateTimeImmutable('now', $timezone);
+        $next_run = new \DateTimeImmutable('now', wp_activity_logger_timezone());
         $next_run = $next_run->setTime(2, 0);
 
         if ($next_run->getTimestamp() <= time()) {
@@ -843,6 +815,44 @@ final class WPActivityLogger
         }
 
         return wp_check_password($provided_password, $saved_hash);
+    }
+
+    public function maybe_save_timezone_settings(): void
+    {
+        if (! $this->is_page_request() || ! $this->is_owner_viewer()) {
+            return;
+        }
+
+        $action = isset($_POST['wp_activity_logger_save_timezone']) ? sanitize_text_field(wp_unslash($_POST['wp_activity_logger_save_timezone'])) : '';
+        if ($action !== '1') {
+            return;
+        }
+
+        check_admin_referer('wp_activity_logger_save_timezone');
+
+        $timezone_name = isset($_POST['wp_activity_logger_timezone']) ? sanitize_text_field(wp_unslash($_POST['wp_activity_logger_timezone'])) : '';
+        if (! wp_activity_logger_is_valid_timezone($timezone_name)) {
+            wp_safe_redirect(
+                add_query_arg(
+                    ['wp_activity_logger_timezone_error' => 'invalid'],
+                    $this->get_admin_page_url()
+                )
+            );
+            exit;
+        }
+
+        update_option(self::OPTION_TIMEZONE, $timezone_name, false);
+        wp_clear_scheduled_hook(self::NIGHTLY_MAINTENANCE_HOOK);
+        wp_clear_scheduled_hook('wp_activity_logger_nightly_update');
+        $this->schedule_nightly_update();
+
+        wp_safe_redirect(
+            add_query_arg(
+                ['wp_activity_logger_timezone_saved' => 'updated'],
+                $this->get_admin_page_url()
+            )
+        );
+        exit;
     }
 }
 

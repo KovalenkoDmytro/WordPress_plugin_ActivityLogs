@@ -102,6 +102,7 @@ function wp_activity_logger_render_dashboard(string $page_url, array $filters, a
     echo '</section>';
 
     wp_activity_logger_render_security_panel($page_url, $security_saved, $security_error);
+    wp_activity_logger_render_timezone_panel($page_url);
 
     echo '<section class="wp-activity-logger-stats">';
     wp_activity_logger_render_stat_card(__('Total logs', 'wp-activity-logger'), (string) $metrics['totalLogs'], 'total-logs');
@@ -187,7 +188,11 @@ function wp_activity_logger_render_dashboard(string $page_url, array $filters, a
     echo '<th>' . esc_html__('User', 'wp-activity-logger') . '</th>';
     echo '<th>' . esc_html__('Activity', 'wp-activity-logger') . '</th>';
     echo '<th>' . esc_html__('IP address', 'wp-activity-logger') . '</th>';
-    echo '<th>' . esc_html__('Timestamp (Edmonton)', 'wp-activity-logger') . '</th>';
+    echo '<th>' . esc_html(sprintf(
+        /* translators: %s: timezone identifier */
+        __('Timestamp (%s)', 'wp-activity-logger'),
+        wp_activity_logger_timezone_name()
+    )) . '</th>';
     echo '</tr></thead>';
     echo '<tbody data-log-rows>';
 
@@ -255,6 +260,45 @@ function wp_activity_logger_render_security_panel(string $page_url, string $secu
     echo '<div class="wp-activity-logger-security-actions">';
     echo '<button type="submit" class="button button-primary">' . esc_html__('Save password', 'wp-activity-logger') . '</button>';
     echo '<button type="submit" class="button button-secondary" name="wp_activity_logger_remove_password" value="1">' . esc_html__('Remove password', 'wp-activity-logger') . '</button>';
+    echo '</div>';
+    echo '</form>';
+    echo '</section>';
+}
+
+function wp_activity_logger_render_timezone_panel(string $page_url): void
+{
+    $timezone_name = wp_activity_logger_timezone_name();
+    $timezone_saved = isset($_GET['wp_activity_logger_timezone_saved']) ? sanitize_text_field(wp_unslash($_GET['wp_activity_logger_timezone_saved'])) : '';
+    $timezone_error = isset($_GET['wp_activity_logger_timezone_error']) ? sanitize_text_field(wp_unslash($_GET['wp_activity_logger_timezone_error'])) : '';
+
+    echo '<section class="wp-activity-logger-security-card">';
+    echo '<div class="wp-activity-logger-security-copy">';
+    echo '<p class="wp-activity-logger-eyebrow">' . esc_html__('Timezone', 'wp-activity-logger') . '</p>';
+    echo '<h3>' . esc_html__('Viewer and schedule timezone', 'wp-activity-logger') . '</h3>';
+    echo '<p>' . esc_html__('Choose which timezone the log timestamps, date filters, and nightly maintenance schedule should use. The default is America/Edmonton.', 'wp-activity-logger') . '</p>';
+    echo '<p><strong>' . esc_html__('Current timezone:', 'wp-activity-logger') . '</strong> ' . esc_html($timezone_name) . '</p>';
+
+    if ($timezone_saved === 'updated') {
+        echo '<div class="notice notice-success inline"><p>' . esc_html__('Timezone settings were updated.', 'wp-activity-logger') . '</p></div>';
+    } elseif ($timezone_error === 'invalid') {
+        echo '<div class="notice notice-error inline"><p>' . esc_html__('Please choose a valid timezone.', 'wp-activity-logger') . '</p></div>';
+    }
+
+    echo '</div>';
+
+    echo '<form method="post" action="' . esc_url($page_url) . '" class="wp-activity-logger-security-form">';
+    wp_nonce_field('wp_activity_logger_save_timezone');
+    echo '<input type="hidden" name="wp_activity_logger_save_timezone" value="1">';
+    echo '<label for="wpal-timezone">' . esc_html__('Timezone', 'wp-activity-logger') . '</label>';
+    echo '<select id="wpal-timezone" name="wp_activity_logger_timezone" class="regular-text">';
+
+    foreach (timezone_identifiers_list() as $identifier) {
+        echo '<option value="' . esc_attr($identifier) . '"' . selected($timezone_name, $identifier, false) . '>' . esc_html($identifier) . '</option>';
+    }
+
+    echo '</select>';
+    echo '<div class="wp-activity-logger-security-actions">';
+    echo '<button type="submit" class="button button-primary">' . esc_html__('Save timezone', 'wp-activity-logger') . '</button>';
     echo '</div>';
     echo '</form>';
     echo '</section>';
