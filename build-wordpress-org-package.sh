@@ -9,7 +9,7 @@ TRUNK_DIR="$BUILD_ROOT/trunk"
 rm -rf "$TRUNK_DIR"
 mkdir -p "$TRUNK_DIR/assets" "$TRUNK_DIR/includes" "$TRUNK_DIR/languages"
 
-cp "$ROOT_DIR/wp-logs-viewer.php" "$TRUNK_DIR/"
+cp "$ROOT_DIR/activity-logger-site-owners.php" "$TRUNK_DIR/"
 cp "$ROOT_DIR/readme.txt" "$TRUNK_DIR/"
 cp "$ROOT_DIR/assets/admin.css" "$TRUNK_DIR/assets/"
 cp "$ROOT_DIR/assets/admin.js" "$TRUNK_DIR/assets/"

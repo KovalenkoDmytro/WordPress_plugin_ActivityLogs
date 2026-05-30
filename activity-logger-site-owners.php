@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: WP Activity Logger
+ * Plugin Name: Activity Logger for Site Owners
  * Plugin URI: https://github.com/KovalenkoDmytro/wp_logs_plugin
  * Description: Records key site activity and provides a protected activity log screen for site owners.
  * Version: 2.6.1
@@ -25,7 +25,7 @@ if (version_compare(PHP_VERSION, '8.1', '<')) {
         'admin_notices',
         static function (): void {
             echo '<div class="notice notice-error"><p>';
-            echo esc_html__('WP Activity Logger requires PHP 8.1 or newer.', 'wp-activity-logger');
+            echo esc_html__('Activity Logger for Site Owners requires PHP 8.1 or newer.', 'wp-activity-logger');
             echo '</p></div>';
         }
     );
@@ -66,7 +66,6 @@ final class WPActivityLogger
         add_action('wp_ajax_wp_activity_logger_fetch_logs', [$this, 'handle_fetch_logs']);
         add_action(self::NIGHTLY_MAINTENANCE_HOOK, [$this, 'run_nightly_maintenance']);
 
-        add_filter('all_plugins', [$this, 'hide_plugin_from_non_owner']);
         add_filter('plugin_row_meta', [$this, 'add_plugin_row_meta_link'], 10, 4);
 
         $this->register_logging_hooks();
@@ -160,8 +159,12 @@ final class WPActivityLogger
 
     public function register_admin_page(): void
     {
+        if (! $this->is_owner_viewer()) {
+            return;
+        }
+
         add_submenu_page(
-            null,
+            'tools.php',
             __('Activity Logs', 'wp-activity-logger'),
             __('Activity Logs', 'wp-activity-logger'),
             self::VIEW_CAPABILITY,
@@ -246,8 +249,8 @@ final class WPActivityLogger
         );
 
         echo '<div class="notice notice-success is-dismissible">';
-        echo '<p><strong>' . esc_html__('WP Activity Logger is hidden from the regular admin menu.', 'wp-activity-logger') . '</strong></p>';
-        echo '<p>' . esc_html__('Bookmark this private link to open the log viewer:', 'wp-activity-logger') . '</p>';
+        echo '<p><strong>' . esc_html__('Activity Logger for Site Owners is ready to use.', 'wp-activity-logger') . '</strong></p>';
+        echo '<p>' . esc_html__('Open Activity Logs from the Tools menu, or use this direct link:', 'wp-activity-logger') . '</p>';
         echo '<p><a href="' . esc_url($this->get_admin_page_url()) . '">' . esc_html($this->get_admin_page_url()) . '</a></p>';
 
         if ($this->is_password_required()) {
@@ -272,19 +275,6 @@ final class WPActivityLogger
 
         $filters = wp_activity_logger_normalize_filters($_POST);
         wp_send_json_success(wp_activity_logger_get_logs_payload($filters));
-    }
-
-    public function hide_plugin_from_non_owner(array $plugins): array
-    {
-        if ($this->is_owner_viewer()) {
-            return $plugins;
-        }
-
-        if (current_user_can('activate_plugins')) {
-            unset($plugins[plugin_basename(__FILE__)]);
-        }
-
-        return $plugins;
     }
 
     public function add_plugin_row_meta_link(array $plugin_meta, string $plugin_file, array $plugin_data, string $status): array
@@ -322,7 +312,7 @@ final class WPActivityLogger
     {
         return add_query_arg(
             ['page' => $this->get_access_slug()],
-            admin_url('admin.php')
+            admin_url('tools.php')
         );
     }
 
@@ -670,7 +660,7 @@ final class WPActivityLogger
 
     private function is_logs_screen(string $hook_suffix): bool
     {
-        if ($hook_suffix === sprintf('admin_page_%s', $this->get_access_slug())) {
+        if ($hook_suffix === sprintf('tools_page_%s', $this->get_access_slug())) {
             return true;
         }
 

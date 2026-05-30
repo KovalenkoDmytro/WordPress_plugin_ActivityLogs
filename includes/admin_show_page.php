@@ -61,9 +61,9 @@ function wp_activity_logger_render_unlock_screen(string $page_url): void
     $has_error = isset($_GET['wp_activity_logger_access_error']) && sanitize_text_field(wp_unslash($_GET['wp_activity_logger_access_error'])) === '1';
 
     echo '<div class="wp-activity-logger-lock-card">';
-    echo '<p class="wp-activity-logger-eyebrow">' . esc_html__('Private screen', 'wp-activity-logger') . '</p>';
+    echo '<p class="wp-activity-logger-eyebrow">' . esc_html__('Protected screen', 'wp-activity-logger') . '</p>';
     echo '<h2>' . esc_html__('Unlock the log viewer', 'wp-activity-logger') . '</h2>';
-    echo '<p>' . esc_html__('This viewer is hidden from the standard admin navigation and protected with an access password.', 'wp-activity-logger') . '</p>';
+    echo '<p>' . esc_html__('This viewer is protected with an access password when one is configured.', 'wp-activity-logger') . '</p>';
 
     if ($has_error) {
         echo '<div class="notice notice-error inline"><p>' . esc_html__('The password did not match. Try again.', 'wp-activity-logger') . '</p></div>';
@@ -91,9 +91,9 @@ function wp_activity_logger_render_dashboard(string $page_url, array $filters, a
 
     echo '<section class="wp-activity-logger-hero">';
     echo '<div>';
-    echo '<p class="wp-activity-logger-eyebrow">' . esc_html__('Owner-only activity monitor', 'wp-activity-logger') . '</p>';
+    echo '<p class="wp-activity-logger-eyebrow">' . esc_html__('Owner activity monitor', 'wp-activity-logger') . '</p>';
     echo '<h2>' . esc_html__('A cleaner audit trail for client work', 'wp-activity-logger') . '</h2>';
-    echo '<p>' . esc_html__('Track edits, plugin changes, and login activity without exposing the screen in the regular admin menu.', 'wp-activity-logger') . '</p>';
+    echo '<p>' . esc_html__('Track edits, plugin changes, and login activity from a dedicated Activity Logs screen.', 'wp-activity-logger') . '</p>';
     echo '</div>';
     echo '<div class="wp-activity-logger-actions">';
     echo '<a class="button button-secondary" href="' . esc_url($page_url) . '">' . esc_html__('Reset view', 'wp-activity-logger') . '</a>';

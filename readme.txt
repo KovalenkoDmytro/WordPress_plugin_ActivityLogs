@@ -1,6 +1,6 @@
-=== WP Activity Logger ===
+=== Activity Logger for Site Owners ===
 Contributors: dmytrokovalenko
-Tags: activity log, audit log, admin logs, security, client sites
+Tags: activity log, audit log, security, logging, monitoring
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 8.1
@@ -8,18 +8,18 @@ Stable tag: 2.6.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Records important WordPress activity and provides a hidden owner-only log viewer for monitoring client changes.
+Records important WordPress activity and provides an owner-only log viewer for monitoring client changes.
 
 == Description ==
 
-WP Activity Logger helps site owners keep an audit trail of important administrative activity without exposing the log screen in the normal WordPress menu.
+Activity Logger for Site Owners helps site owners keep an audit trail of important administrative activity without exposing the log screen in the normal WordPress menu.
 
 Features include:
 
 * Login and logout activity logging
 * Post creation, updates, trash actions, and permanent deletions
 * Plugin activation, deactivation, and deletion logging
-* Hidden owner-only log viewer
+* Owner-only log viewer under the Tools menu
 * Live refresh, filters, sorting, and pagination
 * Optional second password layer before logs are shown
 * Configurable timezone with America/Edmonton as the default
@@ -30,8 +30,8 @@ The plugin does not require an external account or third-party service to functi
 == Installation ==
 
 1. Upload the plugin folder to `/wp-content/plugins/`, or install it through the WordPress Plugins screen.
-2. Activate **WP Activity Logger**.
-3. After activation, bookmark the private log viewer URL shown in the admin notice.
+2. Activate **Activity Logger for Site Owners**.
+3. After activation, open **Tools > Activity Logs**.
 4. Optionally set an extra access password inside the log viewer.
 
 == Frequently Asked Questions ==
@@ -42,7 +42,7 @@ Only the owner account stored by the plugin can open the hidden viewer screen.
 
 = Is the viewer visible in the admin menu? =
 
-No. The screen is intentionally hidden from the regular admin navigation. The owner gets a private access URL and an admin bar shortcut.
+The screen is available to the owner account from the Tools menu and from an admin bar shortcut.
 
 = Does the plugin send data to third-party services? =
 

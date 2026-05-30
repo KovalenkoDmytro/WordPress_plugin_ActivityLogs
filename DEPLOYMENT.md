@@ -26,7 +26,7 @@ wordpress-org-build/
     includes/
     languages/
     readme.txt
-    wp-logs-viewer.php
+    activity-logger-site-owners.php
 ```
 
 ## Before the first submission
